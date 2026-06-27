@@ -1,5 +1,18 @@
 import type { Metadata } from 'next';
+import { Source_Sans_3, Fraunces } from 'next/font/google';
 import './globals.css';
+
+const sourceSans = Source_Sans_3({
+  subsets: ['latin'],
+  variable: '--font-sans',
+  display: 'swap',
+});
+
+const fraunces = Fraunces({
+  subsets: ['latin'],
+  variable: '--font-display',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: 'Mapa Vivo — Agrosintropia',
@@ -20,7 +33,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" className={`${sourceSans.variable} ${fraunces.variable}`}>
       <body className="font-sans antialiased bg-areia text-verde-cerrado min-h-screen">
         {children}
       </body>

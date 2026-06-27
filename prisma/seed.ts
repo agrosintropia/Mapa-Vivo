@@ -368,13 +368,14 @@ const reliabilityOptions = [
 async function main() {
   console.log('🌱 Iniciando seed do banco de dados...');
 
-  // Clear existing data
-  await prisma.submission.deleteMany();
-  await prisma.treeEvent.deleteMany();
-  await prisma.tree.deleteMany();
-  await prisma.species.deleteMany();
-  await prisma.project.deleteMany();
-  await prisma.profile.deleteMany();
+  await prisma.$transaction(async (tx) => {
+    await tx.submission.deleteMany();
+    await tx.treeEvent.deleteMany();
+    await tx.tree.deleteMany();
+    await tx.species.deleteMany();
+    await tx.project.deleteMany();
+    await tx.profile.deleteMany();
+  });
 
   console.log('🗑️  Dados anteriores removidos');
 
@@ -398,30 +399,23 @@ async function main() {
   console.log(`✅ Projeto criado: ${project.name}`);
 
   // ── 2. Create Species ────────────────────────────────────────────────────
-  const speciesIds: string[] = [];
+  const speciesIds = speciesData.map(() => uuidv4());
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await prisma.$transaction(async (tx: any) => {
-    for (const s of speciesData) {
-      const id = uuidv4();
-      speciesIds.push(id);
-      await tx.species.create({
-        data: {
-          id,
-          common_name: s.common_name,
-          scientific_name: s.scientific_name,
-          family: s.family,
-          biome: s.biome,
-          strata: s.strata,
-          description: s.description,
-          ecological_function: s.ecological_function,
-          fruiting_season: s.fruiting_season,
-          fauna_attracted: s.fauna_attracted,
-          subclasses: s.subclasses,
-          default_carbon_factor: s.default_carbon_factor,
-        },
-      });
-    }
+  await prisma.species.createMany({
+    data: speciesData.map((s, i) => ({
+      id: speciesIds[i],
+      common_name: s.common_name,
+      scientific_name: s.scientific_name,
+      family: s.family,
+      biome: s.biome,
+      strata: s.strata,
+      description: s.description,
+      ecological_function: s.ecological_function,
+      fruiting_season: s.fruiting_season,
+      fauna_attracted: s.fauna_attracted,
+      subclasses: s.subclasses,
+      default_carbon_factor: s.default_carbon_factor,
+    })),
   });
 
   console.log(`✅ ${speciesData.length} espécies criadas`);
@@ -446,10 +440,10 @@ async function main() {
 
   const plantedDateStart = new Date('2015-01-01');
   const plantedDateEnd = new Date('2023-12-31');
+  const speciesIndices = Array.from({ length: speciesData.length }, (_, k) => k);
 
   for (let i = 0; i < NUM_TREES; i++) {
-    const indices = Array.from({ length: speciesData.length }, (_, k) => k);
-    const idx = pickWeighted(indices, speciesWeights);
+    const idx = pickWeighted(speciesIndices, speciesWeights);
 
     const species = speciesData[idx];
     const speciesId = speciesIds[idx];

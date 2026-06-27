@@ -6,10 +6,10 @@ export default function Home() {
         <div className="mb-4">
           <span className="text-5xl">🌳</span>
         </div>
-        <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">
+        <h1 className="text-4xl md:text-5xl font-display font-bold mb-4 tracking-tight">
           Mapa Vivo
         </h1>
-        <p className="text-lg md:text-xl text-verde-medio mb-2 font-medium">
+        <p className="text-lg md:text-xl text-ocre mb-2 font-medium">
           por Agrosintropia
         </p>
         <p className="text-base md:text-lg opacity-80 max-w-2xl mt-4">
