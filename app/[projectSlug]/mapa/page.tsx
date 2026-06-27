@@ -36,7 +36,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-async function getProjectData(slug: string): Promise<{ project: ProjectData; trees: TreeData[] } | null> {
+type FetchResult =
+  | { status: 'ok'; project: ProjectData; trees: TreeData[] }
+  | { status: 'not_found' }
+  | { status: 'db_error' };
+
+async function getProjectData(slug: string): Promise<FetchResult> {
   try {
     const project = await prisma.project.findUnique({
       where: { slug },
@@ -52,7 +57,7 @@ async function getProjectData(slug: string): Promise<{ project: ProjectData; tre
       },
     });
 
-    if (!project) return null;
+    if (!project) return { status: 'not_found' };
 
     const trees = await prisma.tree.findMany({
       where: { project_id: project.id },
@@ -79,51 +84,42 @@ async function getProjectData(slug: string): Promise<{ project: ProjectData; tre
       },
     });
 
-    return { project: project as ProjectData, trees: trees as TreeData[] };
+    return { status: 'ok', project: project as ProjectData, trees: trees as TreeData[] };
   } catch (error) {
     console.error('Erro ao conectar ao banco de dados:', error);
-    return null;
+    return { status: 'db_error' };
   }
 }
 
 export default async function MapaPage({ params }: PageProps) {
   const { projectSlug } = params;
-  const data = await getProjectData(projectSlug);
+  const result = await getProjectData(projectSlug);
 
-  if (data === null) {
-    // Could be DB error or project not found — try to distinguish
-    try {
-      const project = await prisma.project.findUnique({
-        where: { slug: projectSlug },
-        select: { id: true },
-      });
-      if (!project) notFound();
-    } catch {
-      // DB unavailable — show error state
-      return (
-        <main className="min-h-screen bg-areia flex flex-col">
-          <header className="bg-verde-cerrado text-white px-4 py-4 flex items-center gap-3">
-            <a href="/" className="text-2xl">🌳</a>
-            <h1 className="font-display text-xl font-bold">Mapa Vivo</h1>
-          </header>
-          <div className="flex-1 flex items-center justify-center p-4">
-            <div className="card max-w-md text-center">
-              <div className="text-4xl mb-4">⚠️</div>
-              <h2 className="text-xl font-bold text-verde-cerrado mb-2">
-                Conexão indisponível
-              </h2>
-              <p className="text-gray-600">
-                Não foi possível conectar ao banco de dados. Tente novamente em alguns instantes.
-              </p>
-            </div>
+  if (result.status === 'not_found') notFound();
+
+  if (result.status === 'db_error') {
+    return (
+      <main className="min-h-screen bg-areia flex flex-col">
+        <header className="bg-verde-cerrado text-white px-4 py-4 flex items-center gap-3">
+          <a href="/" className="text-2xl">🌳</a>
+          <h1 className="font-display text-xl font-bold">Mapa Vivo</h1>
+        </header>
+        <div className="flex-1 flex items-center justify-center p-4">
+          <div className="card max-w-md text-center">
+            <div className="text-4xl mb-4">⚠️</div>
+            <h2 className="text-xl font-bold text-verde-cerrado mb-2">
+              Conexão indisponível
+            </h2>
+            <p className="text-gray-600">
+              Não foi possível conectar ao banco de dados. Tente novamente em alguns instantes.
+            </p>
           </div>
-        </main>
-      );
-    }
-    notFound();
+        </div>
+      </main>
+    );
   }
 
-  const { project, trees } = data;
+  const { project, trees } = result;
 
   return (
     <main className="min-h-screen bg-areia flex flex-col">

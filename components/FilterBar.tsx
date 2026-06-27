@@ -195,8 +195,8 @@ export default function FilterBar({
             <>
               <span className="font-semibold text-verde-cerrado">{filteredCount}</span>
               {filterMode === 'species' && speciesFilter && selectedSpeciesName
-                ? ` ${filteredCount === 1 ? selectedSpeciesName : selectedSpeciesName + 's'} encontrado${filteredCount === 1 ? '' : 's'}`
-                : ` árvore${filteredCount === 1 ? '' : 's'} encontrada${filteredCount === 1 ? '' : 's'}`}
+                ? <>{' '}{selectedSpeciesName} — {filteredCount} {filteredCount === 1 ? 'árvore encontrada' : 'árvores encontradas'}</>
+                : ` ${filteredCount === 1 ? 'árvore encontrada' : 'árvores encontradas'}`}
             </>
           ) : (
             <>

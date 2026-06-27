@@ -84,7 +84,9 @@ export default function MapView({ project, trees }: Props) {
     return trees;
   }, [trees, speciesFilter, subclassFilters, filterMode]);
 
-  const hasActiveFilter = speciesFilter !== null || subclassFilters.size > 0;
+  const hasActiveFilter =
+    (filterMode === 'species' && speciesFilter !== null) ||
+    (filterMode === 'subclass' && subclassFilters.size > 0);
 
   const clearFilters = useCallback(() => {
     setSpeciesFilter(null);
@@ -121,6 +123,7 @@ export default function MapView({ project, trees }: Props) {
       <div className="flex-1 relative">
         <LeafletMap
           project={project}
+          allTrees={trees}
           filteredTrees={filteredTrees}
           speciesColorMap={speciesColorMap}
         />

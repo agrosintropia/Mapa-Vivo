@@ -16,6 +16,7 @@ L.Icon.Default.mergeOptions({
 
 interface Props {
   project: ProjectData;
+  allTrees: TreeData[];
   filteredTrees: TreeData[];
   speciesColorMap: Map<string, string>;
 }
@@ -58,10 +59,10 @@ const STATUS_LABELS: Record<string, string> = {
   removida: 'Removida',
 };
 
-export default function LeafletMap({ project, filteredTrees, speciesColorMap }: Props) {
+export default function LeafletMap({ project, allTrees, filteredTrees, speciesColorMap }: Props) {
   const center = useMemo(
-    () => computeCenter(project, filteredTrees),
-    [project, filteredTrees]
+    () => computeCenter(project, allTrees),
+    [project, allTrees]
   );
 
   return (
