@@ -32,3 +32,9 @@ a {
     @apply bg-white rounded-xl shadow-sm border border-areia p-6;
   }
 }
+
+@media print {
+  body { background: white !important; }
+  .print\:hidden { display: none !important; }
+  .qr-tag { break-inside: avoid; page-break-inside: avoid; }
+}

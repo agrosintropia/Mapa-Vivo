@@ -64,12 +64,51 @@
 
 ---
 
-## Fase 2 — A ser implementada
+## Fase 2 — Ficha da árvore via QR (concluída)
 
-### Ficha da Árvore via QR
-- [ ] Página pública `/arvore/[qr_slug]`
-- [ ] Dados completos: foto, espécie, selos, timeline de eventos
-- [ ] Geração e impressão de QR codes em lote
+**Status:** Completo
+**Commit:** `feat: ficha pública da árvore + geração de QR`
+
+### O que foi feito
+
+#### Ficha pública `/arvore/[qr_slug]`
+- [x] Página hero mobile-first com foto (ou placeholder SVG)
+- [x] Nome comum (font-display, 3xl) + científico (italic) + família
+- [x] Badges: status (colorido), estrato (com ícone), confiabilidade (selo)
+- [x] Subclasses como selos/pills coloridos
+- [x] Seção "Sobre esta espécie": descrição, função ecológica, frutificação, fauna
+- [x] Seção "Medições": DAP, altura, data de plantio em cards
+- [x] Timeline vertical de eventos com cores por tipo
+- [x] Botão "Ver no mapa" vinculado ao projeto
+- [x] Identificador QR slug no rodapé
+- [x] SEO: generateMetadata com nome da espécie e projeto
+
+#### Geração de QR Codes (`/admin/qrcodes`)
+- [x] Lista de todas as árvores com nome, código, status
+- [x] "Gerar QR" por árvore individual com preview e download
+- [x] Impressão em lote: grid de tags com QR + dados da árvore
+- [x] Print CSS: `window.print()`, tags não quebram entre páginas
+- [x] QR aponta para URL pública `/arvore/[qr_slug]`
+- [x] QR usa cor verde-cerrado (#2D5016)
+
+### Como testar manualmente
+1. Acesse `http://localhost:3000/arvore/mv-001` — ficha completa da árvore
+2. Verifique foto placeholder, badges de status/estrato, selos de subclasse
+3. Verifique timeline de eventos (data, tipo, descrição, autor)
+4. Clique "Ver no mapa" — deve ir para `/mata-viva/mapa`
+5. Acesse `http://localhost:3000/admin/qrcodes` — lista de árvores
+6. Clique "Gerar QR" em uma árvore — QR aparece com download
+7. Clique "Impressão em lote" → "Gerar todos" → "Imprimir tags"
+
+---
+
+## Fase 3 — A ser implementada
+
+### Dashboard ambiental
+- [ ] Cartões com totais (indivíduos, espécies, % nativas, ameaçadas)
+- [ ] Carbono estocado estimado (com metodologia)
+- [ ] Gráficos: distribuição por estrato, subclasse, status
+- [ ] Bloco "Sobre o bioma Cerrado"
 
 ---
 
