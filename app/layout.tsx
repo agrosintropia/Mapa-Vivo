@@ -16,9 +16,20 @@ const fraunces = Fraunces({
 
 export const metadata: Metadata = {
   title: 'Mapa Vivo — Agrosintropia',
-  description: 'Plataforma de gestão de áreas verdes em condomínios e parques urbanos. Inventário arbóreo digital, mapa interativo e relatórios ambientais.',
-  keywords: ['árvores', 'inventário arbóreo', 'condomínio', 'área verde', 'cerrado', 'sustentabilidade'],
+  description:
+    'Plataforma de gestão de áreas verdes em condomínios e parques urbanos. Inventário arbóreo digital, mapa interativo e relatórios ambientais.',
+  keywords: [
+    'árvores', 'inventário arbóreo', 'condomínio', 'área verde',
+    'cerrado', 'sustentabilidade', 'carbono', 'Agrosintropia',
+  ],
   authors: [{ name: 'Agrosintropia' }],
+  manifest: '/manifest.json',
+  themeColor: '#2D5016',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Mapa Vivo',
+  },
   openGraph: {
     title: 'Mapa Vivo — Agrosintropia',
     description: 'Gestão de áreas verdes em condomínios e parques urbanos',

@@ -189,14 +189,41 @@
 
 ---
 
-## Fase 5 — A ser implementada
+## Fase 5 — Polimento, PWA e deploy (concluída)
 
-### Polimento, PWA e deploy
-- [ ] Polimento visual e responsividade
-- [ ] PWA manifest + service worker
-- [ ] Landing page
-- [ ] README atualizado
-- [ ] Deploy (Railway/Vercel)
+**Status:** Completo
+**Commit:** `feat: landing page, PWA e polimento final`
+
+### O que foi feito
+
+#### Landing page `/`
+- [x] Hero com logo, tagline e CTAs (ver demo, dashboard)
+- [x] Grid de 6 features com ícones e descrições
+- [x] Lista dinâmica de projetos ativos (do banco de dados)
+- [x] CTA "Falar com a Agrosintropia" (mailto)
+- [x] Footer com navegação e copyright
+- [x] SEO: keywords expandidas, metadados completos
+
+#### PWA
+- [x] `manifest.json` com nome, cores, orientação e ícone SVG
+- [x] Metadados no layout: `manifest`, `themeColor`, `appleWebApp`
+- [x] Ícone SVG vetorial em `/icons/icon.svg`
+
+#### Polimento visual
+- [x] Focus rings nos botões (acessibilidade)
+- [x] Utilitários `line-clamp-1` e `line-clamp-2`
+- [x] Landing page responsiva (mobile-first)
+
+#### Documentação
+- [x] README.md completo: funcionalidades, stack, setup local, rotas, deploy
+- [x] Instruções para Vercel e Railway
+- [x] PROGRESS.md atualizado com todas as 5 fases
+
+### Como testar manualmente
+1. Acesse `http://localhost:3000` — landing page com features e projeto demo
+2. Teste responsividade em mobile/tablet/desktop
+3. Verifique PWA: DevTools → Application → Manifest
+4. Instale como app (Chrome → "Instalar Mapa Vivo")
 
 ---
 
@@ -206,3 +233,5 @@
 - **Para rodar o seed:** `npx prisma db seed` (requer banco ativo)
 - **Para gerar o client Prisma:** `npx prisma generate`
 - **Para criar as tabelas:** `npx prisma migrate dev --name init`
+- **Build para produção:** `npx prisma generate && npm run build`
+- **Deploy:** Vercel (frontend) ou Railway (fullstack). Ver README.md.
