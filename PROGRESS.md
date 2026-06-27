@@ -132,13 +132,71 @@
 
 ---
 
-## Fase 4 — A ser implementada
+## Fase 4 — Painel do gestor + validação (concluída)
 
-### Painel do gestor + validação
-- [ ] Login com Auth.js (Google provider)
-- [ ] Formulário de submissão (gestor)
-- [ ] Fila de aprovação (técnico)
-- [ ] Selo de confiabilidade
+**Status:** Completo
+**Commit:** `feat: painel do gestor, submissões e validação`
+
+### O que foi feito
+
+#### Autenticação (NextAuth v5 + Google OAuth)
+- [x] NextAuth v5 (beta) com PrismaAdapter e Google provider
+- [x] Modelos Prisma: User, Account, Session, VerificationToken
+- [x] Profile vinculado ao User com role (morador/gestor/tecnico)
+- [x] Session callback injeta role e projectId no token
+- [x] Página `/login` com botão Google (SVG) e mensagem de acesso restrito
+- [x] Middleware protege rotas `/[projectSlug]/painel/*` via cookie check
+- [x] `.env.example` atualizado com variáveis Google OAuth e AUTH_SECRET
+
+#### Painel do gestor `/[projectSlug]/painel`
+- [x] Verificação de role (apenas gestor/tecnico) com tela de acesso restrito
+- [x] Cartões resumo: total árvores, validadas, pendentes, submissões
+- [x] Aba "Árvores": tabela com busca, filtro por estado e confiabilidade
+- [x] Aba "Submissões": lista recente com badge de status e link para fila
+- [x] Indicador visual de submissões pendentes (pulse dot + badge)
+- [x] Header com navegação (mapa, dashboard) e badge de role
+
+#### Formulário de submissão `/[projectSlug]/submeter`
+- [x] Formulário público (sem login) para reportar ocorrências
+- [x] Campos: nome, espécie (opcional), coordenadas, observações
+- [x] Botão "Usar minha localização atual" via Geolocation API
+- [x] Dropdown de espécies com nome comum e científico
+- [x] Validação client-side e server-side
+- [x] Tela de sucesso com opções de nova submissão ou ver mapa
+
+#### Fila de aprovação `/[projectSlug]/painel/submissoes`
+- [x] Lista de submissões com filtros por status (pendente/aprovada/rejeitada/mais_info)
+- [x] Card expandido com dados: autor, data, espécie sugerida, coordenadas, notas
+- [x] Ações de revisão: Aprovar, Rejeitar, Pedir mais info
+- [x] Atualização otimista (sem reload) após revisão
+- [x] Contador de pendentes com destaque visual
+
+#### API Routes
+- [x] `POST /api/projects/[slug]/submissions` — criar submissão (validação de input)
+- [x] `PATCH /api/submissions/[id]/review` — revisar submissão (autenticado, role check)
+- [x] `PATCH /api/trees/[id]/validate` — alterar selo de confiabilidade (apenas técnico)
+- [x] Validação de coordenadas (range -90/90, -180/180)
+- [x] Evento de validação registrado automaticamente na timeline da árvore
+
+### Como testar manualmente
+1. Configure Google OAuth credentials no `.env`
+2. Acesse `http://localhost:3000/login` e faça login com Google
+3. Crie um Profile vinculado ao seu User.id com role "tecnico" no banco
+4. Acesse `http://localhost:3000/mata-viva/painel` — painel com árvores e submissões
+5. Em outra aba, acesse `http://localhost:3000/mata-viva/submeter` e envie uma ocorrência
+6. Volte ao painel → aba Submissões → clique "Abrir fila de revisão"
+7. Aprove ou rejeite a submissão
+
+---
+
+## Fase 5 — A ser implementada
+
+### Polimento, PWA e deploy
+- [ ] Polimento visual e responsividade
+- [ ] PWA manifest + service worker
+- [ ] Landing page
+- [ ] README atualizado
+- [ ] Deploy (Railway/Vercel)
 
 ---
 
