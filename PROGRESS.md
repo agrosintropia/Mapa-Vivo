@@ -102,13 +102,43 @@
 
 ---
 
-## Fase 3 — A ser implementada
+## Fase 3 — Dashboard ambiental (concluída)
 
-### Dashboard ambiental
-- [ ] Cartões com totais (indivíduos, espécies, % nativas, ameaçadas)
-- [ ] Carbono estocado estimado (com metodologia)
-- [ ] Gráficos: distribuição por estrato, subclasse, status
-- [ ] Bloco "Sobre o bioma Cerrado"
+**Status:** Completo
+**Commit:** `feat: dashboard ambiental`
+
+### O que foi feito
+
+#### Dashboard `/[projectSlug]/dashboard`
+- [x] Cartões resumo: indivíduos, espécies, % nativas, espécies ameaçadas (com ícones emoji)
+- [x] Carbono estocado estimado (biomassa, carbono, CO₂eq) com metodologia expansível
+- [x] Equação alométrica: biomassa = fator × DAP² × altura / 1000, carbono × 0.47, CO₂eq × 3.67
+- [x] Fator de carbono específico por espécie (`default_carbon_factor`)
+- [x] Exclusão automática de árvores sem DAP ou altura, com contagem exibida
+- [x] Gráfico pizza: distribuição por estrato (Emergente, Alto, Médio, Baixo, Arbustivo)
+- [x] Gráfico donut: distribuição por estado (Viva, Doente, Em tratamento, Morta, Removida)
+- [x] Gráfico barras horizontal: distribuição por subclasse (usando labels de `lib/subclasses.ts`)
+- [x] Bloco informativo "Sobre o bioma Cerrado"
+- [x] Recharts com import dinâmico (`ssr: false`)
+- [x] SEO: generateMetadata com nome do projeto
+- [x] Tratamento de erro quando DB não disponível
+
+### Como testar manualmente
+1. Acesse `http://localhost:3000/mata-viva/dashboard`
+2. Verifique os 4 cartões resumo com valores e ícones
+3. Verifique a seção de carbono com 3 valores e botão "Ver metodologia"
+4. Verifique os 3 gráficos: pizza (estrato), donut (estado), barras (subclasse)
+5. Verifique o bloco sobre o Cerrado no final
+
+---
+
+## Fase 4 — A ser implementada
+
+### Painel do gestor + validação
+- [ ] Login com Auth.js (Google provider)
+- [ ] Formulário de submissão (gestor)
+- [ ] Fila de aprovação (técnico)
+- [ ] Selo de confiabilidade
 
 ---
 
