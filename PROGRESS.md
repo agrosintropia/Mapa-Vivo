@@ -2,76 +2,74 @@
 
 ## Fase 0 — Fundação (concluída)
 
-**Status:** Completo  
-**Commit:** `feat: fundação + seed de demonstração`  
-**Data:** 2024-06
+**Status:** Completo
+**Commit:** `feat: fundação + seed de demonstração`
 
 ### O que foi feito
 
 #### Infraestrutura
-- [x] Projeto Next.js 14 (App Router, TypeScript, Tailwind CSS)
+- [x] Projeto Next.js 14 (App Router, TypeScript, Tailwind CSS v3)
 - [x] Schema Prisma com PostgreSQL — 6 modelos completos
 - [x] Variáveis de ambiente configuradas (`.env`, `.env.example`)
 - [x] Configuração de Tailwind com paleta de cores do cerrado
 - [x] TypeScript configurado com alias `@/*`
-
-#### Modelos de dados
-- [x] `Project` — projetos (condomínios, parques, incorporadoras)
-- [x] `Species` — catálogo de espécies com dados ecológicos
-- [x] `Tree` — inventário arbóreo com QR slug único
-- [x] `TreeEvent` — histórico de eventos por árvore
-- [x] `Submission` — submissões de moradores
-- [x] `Profile` — perfis de usuários (morador, gestor, técnico)
+- [x] Fontes Fraunces (display) + Source Sans 3 via next/font
 
 #### Seed de demonstração
 - [x] **Projeto piloto:** Residencial Mata Viva — Goiânia, GO
-- [x] **20 espécies** nativas do Cerrado e Mata Atlântica com dados ecológicos reais
-- [x] **125 árvores** distribuídas na área do projeto com coordenadas coerentes
-- [x] **~350 eventos** de árvore (plantio, poda, validação, etc.)
-- [x] **4 submissões pendentes** de moradores
-- [x] **3 perfis** de usuários
-
-#### Bibliotecas instaladas
-- [x] `prisma` + `@prisma/client`
-- [x] `next-auth@beta` + `@auth/prisma-adapter`
-- [x] `react-leaflet@4` + `leaflet` (mapa interativo)
-- [x] `recharts` (gráficos)
-- [x] `qrcode` (geração de QR codes)
-- [x] `uuid` (geração de IDs)
-- [x] `ts-node` (execução do seed)
-
-#### Utilitários
-- [x] `lib/subclasses.ts` — lista canônica de subclasses de espécies
+- [x] **20 espécies** nativas do Cerrado e Mata Atlântica
+- [x] **125 árvores** distribuídas na área do projeto
+- [x] **~350 eventos** de árvore + **4 submissões pendentes**
 
 ---
 
-## Fase 1 — A ser implementada
+## Fase 1 — Mapa público interativo (concluída)
 
-### Mapa Interativo (Leaflet)
-- [ ] Página `/mapa/[slug]` com mapa das árvores do projeto
-- [ ] Marcadores coloridos por status
-- [ ] Popup com informações básicas e link para ficha completa
-- [ ] Filtros por espécie, status, subclasse
+**Status:** Completo
+**Commit:** `feat: mapa público com busca por espécie e subclasse`
 
-### Ficha da Árvore
-- [ ] Página `/arvore/[qr_slug]` — acessível via QR code
-- [ ] Exibe espécie, dados dendrométricos, histórico de eventos
-- [ ] Galeria de fotos
+### O que foi feito
 
-### Painel do Gestor
-- [ ] Listagem de árvores com filtros
-- [ ] Aprovação de submissões
-- [ ] Geração de QR codes (PDF)
-- [ ] Relatório resumido
+#### Mapa Interativo (Leaflet)
+- [x] Página `/[projectSlug]/mapa` com mapa Leaflet centralizado no condomínio
+- [x] CircleMarkers coloridos por espécie (paleta de 14 cores distintas)
+- [x] Popup ao clicar: nome comum, científico, status, DAP, altura, link para ficha
+- [x] Import dinâmico do Leaflet (ssr: false) — evita problemas com SSR
+- [x] Loading spinner enquanto o mapa carrega
 
-### Dashboard
-- [ ] Gráficos de diversidade de espécies
-- [ ] Contagem por status
-- [ ] Estimativa de carbono sequestrado
+#### Filtros
+- [x] **Por espécie** — busca com input de texto, case/accent-insensitive, dropdown com contagem
+- [x] **Por subclasse** — chips clicáveis com scroll horizontal, multi-seleção
+- [x] Contador de resultados: "X árvores encontradas" / "Mostrando todas as Y árvores"
+- [x] Botão "Limpar filtros" quando filtros ativos
+- [x] Tabs para alternar entre modo espécie e subclasse
 
-### Autenticação
-- [ ] Login com NextAuth (e-mail magic link ou OAuth)
-- [ ] Controle de acesso por role
+#### Legenda
+- [x] Painel colapsável no canto inferior esquerdo
+- [x] Mostra espécies visíveis com cor, nome e contagem
+- [x] Colapsável no mobile, sempre visível em desktop
+
+#### Infraestrutura
+- [x] `lib/prisma.ts` — singleton lazy do Prisma (Proxy para evitar crash sem DB no build)
+- [x] `lib/types.ts` — tipos compartilhados (ProjectData, TreeData, SpeciesData)
+- [x] API route GET `/api/projects/[slug]/trees`
+- [x] Tratamento de erro quando DB não disponível
+
+### Como testar manualmente
+1. Com Postgres rodando e seed populado, acesse `http://localhost:3000/mata-viva/mapa`
+2. O mapa deve mostrar ~125 marcadores coloridos centrados em Goiânia
+3. Teste filtro por espécie: digite "ipê" e selecione "Ipê-amarelo" — só os ipês devem aparecer
+4. Teste filtro por subclasse: clique em "Ameaçada" — devem aparecer Aroeira e Pau-brasil
+5. Verifique que o popup mostra dados corretos e o link "Ver ficha" aponta para `/arvore/mv-XXX`
+
+---
+
+## Fase 2 — A ser implementada
+
+### Ficha da Árvore via QR
+- [ ] Página pública `/arvore/[qr_slug]`
+- [ ] Dados completos: foto, espécie, selos, timeline de eventos
+- [ ] Geração e impressão de QR codes em lote
 
 ---
 
