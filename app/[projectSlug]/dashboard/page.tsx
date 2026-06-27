@@ -222,14 +222,20 @@ export default async function DashboardPage({ params }: PageProps) {
 
   return (
     <main className="min-h-screen bg-areia flex flex-col">
-      <header className="bg-verde-cerrado text-white px-4 py-3 flex items-center gap-3 shadow-md z-50">
-        <a href={`/${project.slug}/mapa`} className="text-2xl leading-none">🌳</a>
-        <div>
-          <h1 className="font-display text-lg font-bold leading-tight">{project.name}</h1>
-          <p className="text-xs opacity-70">
-            Dashboard Ambiental · {project.city}, {project.state}
-          </p>
+      <header className="bg-verde-cerrado text-white px-4 py-3 flex items-center justify-between shadow-md z-50">
+        <div className="flex items-center gap-3">
+          <a href={`/${project.slug}/mapa`} className="text-2xl leading-none">🌳</a>
+          <div>
+            <h1 className="font-display text-lg font-bold leading-tight">{project.name}</h1>
+            <p className="text-xs opacity-70">
+              Dashboard Ambiental · {project.city}, {project.state}
+            </p>
+          </div>
         </div>
+        <nav className="flex items-center gap-4 text-sm">
+          <a href={`/${project.slug}/mapa`} className="hover:underline opacity-80 hover:opacity-100">Mapa</a>
+          <a href={`/${project.slug}/relatorio`} className="hover:underline opacity-80 hover:opacity-100">Relatório</a>
+        </nav>
       </header>
       <Dashboard stats={stats} projectName={project.name} />
     </main>

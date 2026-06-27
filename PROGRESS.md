@@ -227,6 +227,47 @@
 
 ---
 
+## Fase 6 — Cadastro de árvores, exportação e relatório de diversidade (concluída)
+
+**Status:** Completo
+**Commit:** `feat: cadastro de árvores, exportação CSV e relatório de diversidade`
+
+### O que foi feito
+
+#### Cadastro de árvores (CRUD)
+- [x] Formulário de cadastro `/[projectSlug]/painel/arvores/nova`
+- [x] Formulário de edição `/[projectSlug]/painel/arvores/[treeId]`
+- [x] Campos: espécie, coordenadas (com geolocalização), DAP, altura, estado, data de plantio
+- [x] Selo de confiabilidade automático por role (técnico → validado, gestor → declarado)
+- [x] Geração automática de QR slug (mv-XXXXXXXX)
+- [x] Evento de timeline criado automaticamente (plantio/atualização)
+- [x] API `POST /api/projects/[slug]/trees` e `PUT /api/projects/[slug]/trees?id=`
+- [x] Botões "Cadastrar árvore" e "Editar" no painel do gestor
+
+#### Exportação CSV
+- [x] Endpoint `GET /api/projects/[slug]/export` gera CSV completo
+- [x] Colunas: código, espécie, científico, família, estrato, coordenadas, DAP, altura, estado, confiabilidade, data plantio, subclasses
+- [x] BOM UTF-8 para compatibilidade com Excel
+- [x] Escaping correto de campos com vírgulas/aspas
+- [x] Botão "Exportar CSV" no painel do gestor
+
+#### Relatório de diversidade `/[projectSlug]/relatorio`
+- [x] Métricas: indivíduos, espécies, famílias, nativas, ameaçadas, árvores/ha
+- [x] Índice de Shannon-Wiener (H')
+- [x] Índice de Simpson (1-D)
+- [x] Tabela completa de espécies com contagem, %, estrato e classificações
+- [x] Botão imprimir (print CSS)
+- [x] Link para exportação CSV
+- [x] Navegação: links no dashboard e painel
+
+### Como testar manualmente
+1. No painel (`/mata-viva/painel`), clique "Cadastrar árvore" e preencha o formulário
+2. Na tabela de árvores, clique "Editar" em qualquer árvore
+3. Clique "Exportar CSV" — arquivo `.csv` é baixado
+4. Acesse `/mata-viva/relatorio` — relatório com índices de diversidade e tabela de espécies
+
+---
+
 ## Notas técnicas
 
 - **Banco de dados:** PostgreSQL (local: `localhost:5432/mapavivo`)

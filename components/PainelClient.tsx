@@ -69,6 +69,19 @@ export default function PainelClient({ data }: { data: PainelData }) {
 
   return (
     <div className="flex-1 p-4 md:p-8 max-w-6xl mx-auto w-full space-y-6">
+      {/* Actions */}
+      <div className="flex flex-wrap gap-3">
+        <a href={`/${data.projectSlug}/painel/arvores/nova`} className="btn-primary text-sm">
+          + Cadastrar árvore
+        </a>
+        <a href={`/api/projects/${data.projectSlug}/export`} className="btn-secondary text-sm">
+          Exportar CSV
+        </a>
+        <a href={`/${data.projectSlug}/relatorio`} className="bg-white text-verde-cerrado border border-verde-medio px-6 py-3 rounded-lg font-semibold hover:bg-verde-medio/5 transition-colors text-sm">
+          Relatório de diversidade
+        </a>
+      </div>
+
       {/* Summary cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="card text-center py-4">
@@ -200,12 +213,18 @@ export default function PainelClient({ data }: { data: PainelData }) {
                     <td className="py-2 px-2 text-right text-gray-500 hidden md:table-cell">
                       {tree.height_m != null ? `${tree.height_m} m` : '—'}
                     </td>
-                    <td className="py-2 px-2 text-center">
+                    <td className="py-2 px-2 text-center space-x-2">
                       <a
                         href={`/arvore/${tree.qr_slug}`}
                         className="text-verde-medio hover:underline text-xs"
                       >
-                        Ver ficha
+                        Ficha
+                      </a>
+                      <a
+                        href={`/${data.projectSlug}/painel/arvores/${tree.id}`}
+                        className="text-ocre hover:underline text-xs"
+                      >
+                        Editar
                       </a>
                     </td>
                   </tr>
