@@ -133,7 +133,7 @@ export default async function MapaPage({ params }: PageProps) {
           </p>
         </div>
       </header>
-      <MapView project={project} trees={trees} />
+      <MapView project={project} trees={trees} projectSlug={projectSlug} />
     </main>
   );
 }

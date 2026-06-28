@@ -4,6 +4,7 @@ import { useState, useMemo, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import FilterBar from './FilterBar';
 import MapLegend from './MapLegend';
+import ObservationModal from './ObservationModal';
 import type { ProjectData, TreeData } from '@/lib/types';
 
 const LeafletMap = dynamic(() => import('./LeafletMap'), {
@@ -35,12 +36,14 @@ function getSpeciesColor(speciesId: string, colorMap: Map<string, string>): stri
 interface Props {
   project: ProjectData;
   trees: TreeData[];
+  projectSlug: string;
 }
 
-export default function MapView({ project, trees }: Props) {
+export default function MapView({ project, trees, projectSlug }: Props) {
   const [speciesFilter, setSpeciesFilter] = useState<string | null>(null);
   const [subclassFilters, setSubclassFilters] = useState<Set<string>>(new Set());
   const [filterMode, setFilterMode] = useState<'species' | 'subclass'>('species');
+  const [observingTree, setObservingTree] = useState<TreeData | null>(null);
 
   // Build stable species-color map
   const speciesColorMap = useMemo(() => {
@@ -126,12 +129,21 @@ export default function MapView({ project, trees }: Props) {
           allTrees={trees}
           filteredTrees={filteredTrees}
           speciesColorMap={speciesColorMap}
+          onObserve={setObservingTree}
         />
         <MapLegend
           trees={filteredTrees}
           speciesColorMap={speciesColorMap}
         />
       </div>
+
+      {observingTree && (
+        <ObservationModal
+          tree={observingTree}
+          projectSlug={projectSlug}
+          onClose={() => setObservingTree(null)}
+        />
+      )}
     </div>
   );
 }

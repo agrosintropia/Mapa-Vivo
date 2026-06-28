@@ -57,6 +57,7 @@ model Tree {
   project      Project     @relation(fields: [project_id], references: [id])
   species      Species     @relation(fields: [species_id], references: [id])
   events       TreeEvent[]
+  observations TreeObservation[]
 }
 
 model TreeEvent {
@@ -66,6 +67,21 @@ model TreeEvent {
   description String?
   photo_url   String?
   author_role String // gestor|tecnico
+  created_at  DateTime @default(now())
+  tree        Tree     @relation(fields: [tree_id], references: [id])
+}
+
+model TreeObservation {
+  id          String   @id @default(uuid())
+  tree_id     String
+  user_id     String
+  user_name   String
+  type        String // saude|frutificacao|floracao|fauna|outro
+  description String?
+  audio_url   String?
+  photo_urls  String[]
+  status      String   @default("pendente") // pendente|validada|consulta_tecnica|descartada
+  reviewer_note String?
   created_at  DateTime @default(now())
   tree        Tree     @relation(fields: [tree_id], references: [id])
 }

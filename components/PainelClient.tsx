@@ -80,6 +80,9 @@ export default function PainelClient({ data }: { data: PainelData }) {
         <a href={`/${data.projectSlug}/relatorio`} className="bg-white text-verde-cerrado border border-verde-medio px-6 py-3 rounded-lg font-semibold hover:bg-verde-medio/5 transition-colors text-sm">
           Relatório de diversidade
         </a>
+        <a href={`/${data.projectSlug}/painel/observacoes`} className="bg-white text-terracota border border-terracota px-6 py-3 rounded-lg font-semibold hover:bg-terracota/5 transition-colors text-sm">
+          📝 Observações dos moradores
+        </a>
       </div>
 
       {/* Summary cards */}
