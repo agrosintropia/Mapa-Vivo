@@ -47,6 +47,15 @@ const SUBMISSION_STATUS_COLORS: Record<string, string> = {
   mais_info: 'bg-blue-50 text-blue-600',
 };
 
+const SERVICES = [
+  { id: 'reflorestamento', icon: '🌱', label: 'Projeto de Reflorestamento', description: 'Planejamento e execução de áreas degradadas' },
+  { id: 'pomar', icon: '🍊', label: 'Pomar e Horta Comunitária', description: 'Implantação de pomares e hortas produtivas' },
+  { id: 'paisagismo', icon: '🌺', label: 'Paisagismo Funcional', description: 'Paisagismo com espécies nativas e frutíferas' },
+  { id: 'adubacao', icon: '🧪', label: 'Recomendações de Adubação', description: 'Análise de solo e plano de adubação' },
+  { id: 'assessoria', icon: '💻', label: 'Assessoria Técnica Remota', description: 'Consultoria online para plantio e manejo' },
+  { id: 'curso', icon: '📚', label: 'Curso Presencial de Agrofloresta', description: 'Capacitação prática em sistemas agroflorestais' },
+];
+
 export default function PainelClient({ data }: { data: PainelData }) {
   const [tab, setTab] = useState<Tab>('arvores');
   const [search, setSearch] = useState('');
@@ -153,6 +162,31 @@ export default function PainelClient({ data }: { data: PainelData }) {
           </a>
         )}
       </div>
+
+      {/* Services CTA for gestor */}
+      {data.userRole === 'gestor' && (
+        <div className="card space-y-3">
+          <h3 className="font-display text-lg font-bold text-verde-cerrado">Serviços AgroSintropia</h3>
+          <p className="text-sm text-gray-500">Conheça nossos serviços especializados. Clique para falar com nosso comercial.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {SERVICES.map(s => (
+              <a
+                key={s.id}
+                href={`https://wa.me/5562998062150?text=${encodeURIComponent(`Olá AgroSintropia! Tenho interesse no serviço: *${s.label}*\n\nProjeto: ${data.projectName}`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-start gap-3 p-3 rounded-lg border border-gray-200 hover:border-verde-medio hover:bg-verde-claro/10 transition-all group"
+              >
+                <span className="text-xl">{s.icon}</span>
+                <div className="min-w-0">
+                  <p className="font-medium text-gray-700 text-sm group-hover:text-verde-cerrado">{s.label}</p>
+                  <p className="text-xs text-gray-400">{s.description}</p>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
