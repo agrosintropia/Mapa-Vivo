@@ -24,6 +24,6 @@ ALTER TABLE "Project" ADD CONSTRAINT "Project_plan_id_fkey" FOREIGN KEY ("plan_i
 -- Seed default plans
 INSERT INTO "Plan" ("id", "name", "display_name", "monthly_price", "tree_limit", "visit_limit", "features")
 VALUES
-    (gen_random_uuid(), 'basico', 'Básico', 299.00, 200, 2, ARRAY['Mapeamento de árvores', 'QR codes', 'Painel do gestor', 'Relatório básico']),
-    (gen_random_uuid(), 'profissional', 'Profissional', 599.00, 1000, 6, ARRAY['Tudo do Básico', 'Sub-áreas ilimitadas', 'Relatório completo de diversidade', 'Observações de moradores', 'Exportação CSV']),
-    (gen_random_uuid(), 'enterprise', 'Enterprise', 1299.00, NULL, NULL, ARRAY['Tudo do Profissional', 'Árvores ilimitadas', 'Visitas ilimitadas', 'API de integração', 'Suporte prioritário', 'Relatório personalizado']);
+    (gen_random_uuid(), 'basico', 'Básico', 479.00, 200, 0, ARRAY['Mapeamento de árvores', 'QR codes', 'Painel do gestor', 'Relatório básico', 'Observações de moradores']),
+    (gen_random_uuid(), 'standard', 'Standard', 679.00, 1000, 1, ARRAY['Tudo do Básico', 'Sub-áreas ilimitadas', 'Relatório completo de diversidade', 'Exportação CSV', '1 visita técnica/ano (sem deslocamento)']),
+    (gen_random_uuid(), 'premium', 'Premium', 1379.00, 5000, 2, ARRAY['Tudo do Standard', 'Até 5.000 árvores', 'API de integração', '2 visitas técnicas/ano (sem deslocamento)', 'Suporte prioritário', 'Relatório personalizado']);

@@ -11,7 +11,7 @@ datasource db {
 
 model Plan {
   id             String   @id @default(uuid())
-  name           String   @unique // basico|profissional|enterprise
+  name           String   @unique // basico|standard|premium
   display_name   String
   monthly_price  Float
   tree_limit     Int?

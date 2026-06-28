@@ -346,7 +346,7 @@ export default function AdminDashboard({ data }: Props) {
                   </p>
                   <div className="text-sm text-gray-600 space-y-1">
                     <p>Árvores: {plan.treeLimit ? plan.treeLimit.toLocaleString('pt-BR') : 'Ilimitadas'}</p>
-                    <p>Visitas/ano: {plan.visitLimit || 'Ilimitadas'}</p>
+                    <p>Visitas/ano: {plan.visitLimit === 0 ? 'Não inclusa' : plan.visitLimit ?? 'Ilimitadas'}</p>
                   </div>
                   <ul className="text-sm text-gray-600 space-y-1">
                     {plan.features.map((f, i) => (
