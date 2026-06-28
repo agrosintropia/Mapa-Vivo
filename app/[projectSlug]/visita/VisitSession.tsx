@@ -73,6 +73,8 @@ export default function VisitSession({
   const [addHeight, setAddHeight] = useState('');
   const [addStatus, setAddStatus] = useState('viva');
   const [addNotes, setAddNotes] = useState('');
+  const [addCount, setAddCount] = useState(0);
+  const [lastAdded, setLastAdded] = useState('');
 
   // Edit tree
   const [editTreeId, setEditTreeId] = useState('');
@@ -147,7 +149,7 @@ export default function VisitSession({
     }
   }, [visitId]);
 
-  const handleAddTree = async () => {
+  const handleAddTree = async (continueAdding: boolean) => {
     if (!addSpeciesId || !addLat || !addLng) { setError('Espécie e coordenadas obrigatórias'); return; }
     const result = await doAction({
       action_type: 'adicao_arvore',
@@ -170,9 +172,19 @@ export default function VisitSession({
         height_m: addHeight ? parseFloat(addHeight) : null,
         species: { id: addSpeciesId, common_name: sp?.common_name || '', scientific_name: sp?.scientific_name || '' },
       }]);
+      setAddCount(prev => prev + 1);
+      setLastAdded(sp?.common_name || 'árvore');
+
+      // Reset form but keep GPS for continuous field work
       setAddSpeciesSearch(''); setAddSpeciesId(''); setAddDbh(''); setAddHeight('');
       setAddStatus('viva'); setAddNotes('');
-      setPanel('sessao');
+
+      if (continueAdding) {
+        useGPS(setAddLat, setAddLng);
+      } else {
+        setAddLat(''); setAddLng('');
+        setPanel('sessao');
+      }
     }
   };
 
@@ -350,7 +362,7 @@ export default function VisitSession({
               <p className="text-sm text-gray-500 mb-4">{purpose} &middot; {userName}</p>
 
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                <button onClick={() => setPanel('adicionar')} className="p-4 border-2 border-dashed border-green-300 rounded-lg text-center hover:bg-green-50 transition-colors cursor-pointer">
+                <button onClick={() => { setPanel('adicionar'); setLastAdded(''); useGPS(setAddLat, setAddLng); }} className="p-4 border-2 border-dashed border-green-300 rounded-lg text-center hover:bg-green-50 transition-colors cursor-pointer">
                   <span className="text-2xl block mb-1">🌱</span>
                   <span className="text-sm font-medium text-green-700">Adicionar árvore</span>
                 </button>
@@ -435,8 +447,21 @@ export default function VisitSession({
           <div className="card space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="font-display text-lg font-bold text-green-700">Adicionar Árvore</h2>
-              <button onClick={() => setPanel('sessao')} className="text-sm text-gray-500 hover:underline cursor-pointer">Voltar</button>
+              <div className="flex items-center gap-3">
+                {addCount > 0 && (
+                  <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">
+                    {addCount} cadastradas
+                  </span>
+                )}
+                <button onClick={() => setPanel('sessao')} className="text-sm text-gray-500 hover:underline cursor-pointer">Voltar</button>
+              </div>
             </div>
+
+            {lastAdded && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-green-700 flex items-center gap-2">
+                <span>✓</span> <strong>{lastAdded}</strong> cadastrada com sucesso!
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Espécie *</label>
@@ -508,9 +533,14 @@ export default function VisitSession({
                 className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-verde-medio/50 resize-none" />
             </div>
 
-            <button onClick={handleAddTree} disabled={loading || !addSpeciesId} className="btn-primary w-full disabled:opacity-50">
-              {loading ? 'Salvando...' : 'Adicionar Árvore'}
-            </button>
+            <div className="flex gap-3">
+              <button onClick={() => handleAddTree(false)} disabled={loading || !addSpeciesId} className="btn-secondary flex-1 disabled:opacity-50">
+                {loading ? 'Salvando...' : 'Salvar e voltar'}
+              </button>
+              <button onClick={() => handleAddTree(true)} disabled={loading || !addSpeciesId} className="btn-primary flex-1 disabled:opacity-50">
+                {loading ? 'Salvando...' : 'Salvar e cadastrar próxima'}
+              </button>
+            </div>
           </div>
         )}
 

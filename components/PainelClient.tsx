@@ -69,6 +69,26 @@ export default function PainelClient({ data }: { data: PainelData }) {
 
   return (
     <div className="flex-1 p-4 md:p-8 max-w-6xl mx-auto w-full space-y-6">
+      {/* Empty project CTA */}
+      {data.totalTrees === 0 && data.userRole === 'tecnico' && (
+        <div className="card border-2 border-dashed border-verde-medio text-center py-8">
+          <div className="text-4xl mb-3">🌱</div>
+          <h2 className="font-display text-xl font-bold text-verde-cerrado mb-2">
+            Seu projeto está vazio
+          </h2>
+          <p className="text-sm text-gray-500 mb-4 max-w-md mx-auto">
+            Inicie uma visita técnica para cadastrar as primeiras árvores do projeto.
+            Todas as adições serão registradas automaticamente.
+          </p>
+          <a
+            href={`/${data.projectSlug}/visita`}
+            className="btn-primary inline-block text-base"
+          >
+            Iniciar visita técnica
+          </a>
+        </div>
+      )}
+
       {/* Actions */}
       <div className="flex flex-wrap gap-3">
         {data.userRole === 'tecnico' && (
