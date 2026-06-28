@@ -7,20 +7,19 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model Project {
-  id            String   @id @default(uuid())
+  id            String       @id @default(uuid())
   name          String
-  slug          String   @unique
-  type          String   // condominio|parque|incorporadora
+  slug          String       @unique
+  type          String // condominio|parque|incorporadora
   city          String
   state         String
   biome         String
   area_hectares Float?
-  boundary      Json?    // GeoJSON polygon optional
-  created_at    DateTime @default(now())
+  boundary      Json? // GeoJSON polygon optional
+  created_at    DateTime     @default(now())
   trees         Tree[]
   submissions   Submission[]
 }
@@ -31,7 +30,7 @@ model Species {
   scientific_name       String
   family                String
   biome                 String[]
-  strata                String   // emergente|alto|medio|baixo|arbustivo
+  strata                String // emergente|alto|medio|baixo|arbustivo
   description           String?
   ecological_function   String?
   fruiting_season       String?
@@ -42,7 +41,7 @@ model Species {
 }
 
 model Tree {
-  id           String    @id @default(uuid())
+  id           String      @id @default(uuid())
   project_id   String
   species_id   String
   lat          Float
@@ -50,23 +49,23 @@ model Tree {
   dbh_cm       Float?
   height_m     Float?
   planted_date DateTime?
-  status       String    @default("viva")         // viva|doente|em_tratamento|morta|removida
-  reliability  String    @default("pendente")     // validado_tecnico|pendente|declarado_gestor
+  status       String      @default("viva") // viva|doente|em_tratamento|morta|removida
+  reliability  String      @default("pendente") // validado_tecnico|pendente|declarado_gestor
   photo_url    String?
-  qr_slug      String    @unique
-  created_at   DateTime  @default(now())
-  project      Project   @relation(fields: [project_id], references: [id])
-  species      Species   @relation(fields: [species_id], references: [id])
+  qr_slug      String      @unique
+  created_at   DateTime    @default(now())
+  project      Project     @relation(fields: [project_id], references: [id])
+  species      Species     @relation(fields: [species_id], references: [id])
   events       TreeEvent[]
 }
 
 model TreeEvent {
   id          String   @id @default(uuid())
   tree_id     String
-  type        String   // plantio|atualizacao_estado|poda|validacao|observacao
+  type        String // plantio|atualizacao_estado|poda|validacao|observacao
   description String?
   photo_url   String?
-  author_role String   // gestor|tecnico
+  author_role String // gestor|tecnico
   created_at  DateTime @default(now())
   tree        Tree     @relation(fields: [tree_id], references: [id])
 }
@@ -89,7 +88,7 @@ model Submission {
 model Profile {
   id         String  @id
   name       String
-  role       String  // morador|gestor|tecnico
+  role       String // morador|gestor|tecnico
   project_id String?
   user       User?   @relation(fields: [id], references: [id])
 }
