@@ -118,9 +118,9 @@ export default function PainelClient({ data }: { data: PainelData }) {
             + Criar novo projeto
           </a>
         )}
-        {data.userRole === 'tecnico' && (
+        {(data.userRole === 'tecnico' || data.userRole === 'gestor') && (
           <a href={`/${data.projectSlug}/painel/arvores/nova`} className="btn-primary text-sm">
-            + Cadastrar árvore
+            + Cadastrar nova árvore
           </a>
         )}
         <a href={`/api/projects/${data.projectSlug}/export`} className="btn-secondary text-sm">
@@ -137,11 +137,6 @@ export default function PainelClient({ data }: { data: PainelData }) {
             </span>
           )}
         </a>
-        {data.userRole === 'gestor' && (
-          <a href={`/${data.projectSlug}/painel/especies`} className="bg-white text-verde-cerrado border border-verde-cerrado px-6 py-3 rounded-lg font-semibold hover:bg-verde-cerrado/5 transition-colors text-sm">
-            + Sugerir espécie
-          </a>
-        )}
         {data.userRole === 'tecnico' && (
           <>
             <a href={`/${data.projectSlug}/visita`} className="bg-verde-medio text-white px-6 py-3 rounded-lg font-semibold hover:bg-verde-medio/90 transition-colors text-sm">
