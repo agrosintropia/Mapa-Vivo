@@ -377,6 +377,9 @@ async function main() {
     await tx.species.deleteMany();
     await tx.project.deleteMany();
     await tx.profile.deleteMany();
+    await tx.session.deleteMany();
+    await tx.account.deleteMany();
+    await tx.user.deleteMany();
   });
 
   console.log('🗑️  Dados anteriores removidos');
@@ -631,14 +634,25 @@ async function main() {
 
   console.log(`✅ ${submissionsData.length} submissões pendentes criadas`);
 
-  // ── 6. Create Profiles ────────────────────────────────────────────────────
-  const profiles = [
-    { id: uuidv4(), name: 'Admin Mata Viva', role: 'gestor', project_id: projectId },
-    { id: uuidv4(), name: 'Dr. Paulo Botânico', role: 'tecnico', project_id: projectId },
-    { id: uuidv4(), name: 'Moradora Bloco A', role: 'morador', project_id: projectId },
+  // ── 6. Create Users + Profiles ─────────────────────────────────────────────
+  const usersWithProfiles = [
+    { name: 'Admin Mata Viva', role: 'gestor', project_id: projectId },
+    { name: 'Dr. Paulo Botânico', role: 'tecnico', project_id: projectId },
+    { name: 'Moradora Bloco A', role: 'morador', project_id: projectId },
   ];
 
-  await prisma.profile.createMany({ data: profiles });
+  for (const u of usersWithProfiles) {
+    const id = uuidv4();
+    await prisma.user.create({
+      data: {
+        id,
+        name: u.name,
+        profile: { create: { name: u.name, role: u.role, project_id: u.project_id } },
+      },
+    });
+  }
+
+  const profiles = usersWithProfiles;
 
   console.log(`✅ ${profiles.length} perfis criados`);
 
