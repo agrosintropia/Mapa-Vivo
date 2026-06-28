@@ -108,6 +108,11 @@ export default async function Home() {
       <nav className="absolute top-0 right-0 p-4 z-50 flex items-center gap-3">
         {session?.user ? (
           <>
+            {userRole === 'admin' && (
+              <Link href="/admin" className="bg-verde-cerrado text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-verde-cerrado/90 transition-colors">
+                Admin
+              </Link>
+            )}
             {userRole === 'tecnico' && (
               <Link href="/projetos" className="bg-ocre text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-ocre/90 transition-colors">
                 Meus Projetos

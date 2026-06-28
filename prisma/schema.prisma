@@ -9,6 +9,19 @@ datasource db {
   provider = "postgresql"
 }
 
+model Plan {
+  id             String   @id @default(uuid())
+  name           String   @unique // basico|profissional|enterprise
+  display_name   String
+  monthly_price  Float
+  tree_limit     Int?
+  visit_limit    Int?
+  features       String[]
+  active         Boolean  @default(true)
+  created_at     DateTime @default(now())
+  projects       Project[]
+}
+
 model Project {
   id            String       @id @default(uuid())
   name          String
@@ -23,7 +36,10 @@ model Project {
   created_by    String?
   invite_code   String?      @unique
   gestor_email  String?
+  plan_id       String?
+  status        String       @default("ativo") // ativo|inativo|trial|suspenso
   created_at    DateTime     @default(now())
+  plan          Plan?        @relation(fields: [plan_id], references: [id])
   trees         Tree[]
   submissions   Submission[]
   sub_areas     SubArea[]
@@ -179,7 +195,7 @@ model Submission {
 model Profile {
   id         String  @id
   name       String
-  role       String // morador|gestor|tecnico
+  role       String // morador|gestor|tecnico|admin
   project_id String?
   user       User?   @relation(fields: [id], references: [id])
 }
