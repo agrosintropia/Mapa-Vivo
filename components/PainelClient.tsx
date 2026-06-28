@@ -86,8 +86,18 @@ export default function PainelClient({ data }: { data: PainelData }) {
           Relatório de diversidade
         </a>
         <a href={`/${data.projectSlug}/painel/observacoes`} className="bg-white text-terracota border border-terracota px-6 py-3 rounded-lg font-semibold hover:bg-terracota/5 transition-colors text-sm">
-          📝 Observações dos moradores
+          Observações dos moradores
         </a>
+        {data.userRole === 'tecnico' && (
+          <>
+            <a href={`/${data.projectSlug}/visita`} className="bg-verde-medio text-white px-6 py-3 rounded-lg font-semibold hover:bg-verde-medio/90 transition-colors text-sm">
+              Iniciar visita técnica
+            </a>
+            <a href={`/${data.projectSlug}/painel/visitas`} className="bg-white text-verde-cerrado border border-verde-cerrado px-6 py-3 rounded-lg font-semibold hover:bg-verde-cerrado/5 transition-colors text-sm">
+              Histórico de visitas
+            </a>
+          </>
+        )}
       </div>
 
       {/* Summary cards */}

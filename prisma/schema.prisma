@@ -25,6 +25,33 @@ model Project {
   trees         Tree[]
   submissions   Submission[]
   sub_areas     SubArea[]
+  visits        TechnicalVisit[]
+}
+
+model TechnicalVisit {
+  id             String        @id @default(uuid())
+  project_id     String
+  technician_id  String
+  technician_name String
+  purpose        String
+  notes          String?
+  status         String        @default("em_andamento") // em_andamento|finalizada
+  started_at     DateTime      @default(now())
+  finished_at    DateTime?
+  project        Project       @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  actions        VisitAction[]
+}
+
+model VisitAction {
+  id          String   @id @default(uuid())
+  visit_id    String
+  type        String // adicao_arvore|remocao_arvore|edicao_arvore|edicao_especie|adicao_subarea|edicao_projeto
+  entity_type String // tree|species|sub_area|project
+  entity_id   String?
+  summary     String
+  details     Json?
+  created_at  DateTime @default(now())
+  visit       TechnicalVisit @relation(fields: [visit_id], references: [id], onDelete: Cascade)
 }
 
 model SubArea {
