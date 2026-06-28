@@ -13,15 +13,32 @@ model Project {
   id            String       @id @default(uuid())
   name          String
   slug          String       @unique
-  type          String // condominio|parque|incorporadora
+  type          String // condominio|parque|incorporadora|agrofloresta
   city          String
   state         String
   biome         String
   area_hectares Float?
-  boundary      Json? // GeoJSON polygon optional
+  boundary      Json? // GeoJSON polygon/multipolygon from KML/KMZ
+  description   String?
+  created_by    String?
   created_at    DateTime     @default(now())
   trees         Tree[]
   submissions   Submission[]
+  sub_areas     SubArea[]
+}
+
+model SubArea {
+  id            String   @id @default(uuid())
+  project_id    String
+  name          String
+  slug          String
+  description   String?
+  boundary      Json? // GeoJSON polygon
+  area_hectares Float?
+  created_at    DateTime @default(now())
+  project       Project  @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@unique([project_id, slug])
 }
 
 model Species {

@@ -71,6 +71,11 @@ export default function PainelClient({ data }: { data: PainelData }) {
     <div className="flex-1 p-4 md:p-8 max-w-6xl mx-auto w-full space-y-6">
       {/* Actions */}
       <div className="flex flex-wrap gap-3">
+        {data.userRole === 'tecnico' && (
+          <a href="/projetos/novo" className="bg-verde-cerrado text-white px-6 py-3 rounded-lg font-semibold hover:bg-verde-cerrado/90 transition-colors text-sm border-2 border-verde-medio">
+            + Criar novo projeto
+          </a>
+        )}
         <a href={`/${data.projectSlug}/painel/arvores/nova`} className="btn-primary text-sm">
           + Cadastrar árvore
         </a>
