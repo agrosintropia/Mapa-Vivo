@@ -39,6 +39,20 @@ export async function POST(request: Request) {
     if (project) projectId = project.id;
   }
 
+  if (!projectId && role === 'gestor' && session.user.email) {
+    const gestorProject = await prisma.project.findFirst({
+      where: { gestor_email: session.user.email },
+    });
+    if (gestorProject) {
+      projectId = gestorProject.id;
+      await prisma.projectMember.upsert({
+        where: { project_id_user_id: { project_id: gestorProject.id, user_id: session.user.id } },
+        update: { role: 'gestor' },
+        create: { project_id: gestorProject.id, user_id: session.user.id, role: 'gestor' },
+      });
+    }
+  }
+
   if (!projectId) {
     const firstProject = await prisma.project.findFirst();
     projectId = firstProject?.id ?? null;
@@ -53,5 +67,7 @@ export async function POST(request: Request) {
     },
   });
 
-  return NextResponse.json(profile);
+  const projectForSlug = projectId ? await prisma.project.findUnique({ where: { id: projectId }, select: { slug: true } }) : null;
+
+  return NextResponse.json({ ...profile, projectSlug: projectForSlug?.slug || null });
 }

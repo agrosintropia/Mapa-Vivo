@@ -89,6 +89,28 @@ export default function PainelClient({ data }: { data: PainelData }) {
         </div>
       )}
 
+      {/* Invite link for gestor */}
+      {data.userRole === 'gestor' && data.inviteCode && (
+        <div className="card border-l-4 border-l-verde-medio">
+          <p className="text-sm font-medium text-verde-cerrado mb-1">Link de convite para moradores</p>
+          <div className="flex items-center gap-2">
+            <code className="flex-1 text-xs bg-gray-100 px-3 py-2 rounded-lg break-all">
+              {typeof window !== 'undefined' ? `${window.location.origin}/convite/${data.inviteCode}` : `/convite/${data.inviteCode}`}
+            </code>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(`${window.location.origin}/convite/${data.inviteCode}`);
+                alert('Link copiado!');
+              }}
+              className="bg-verde-medio text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-verde-cerrado transition-colors cursor-pointer whitespace-nowrap"
+            >
+              Copiar
+            </button>
+          </div>
+          <p className="text-xs text-gray-400 mt-1">Compartilhe este link com os moradores do condomínio.</p>
+        </div>
+      )}
+
       {/* Actions */}
       <div className="flex flex-wrap gap-3">
         {data.userRole === 'tecnico' && (
@@ -96,18 +118,30 @@ export default function PainelClient({ data }: { data: PainelData }) {
             + Criar novo projeto
           </a>
         )}
-        <a href={`/${data.projectSlug}/painel/arvores/nova`} className="btn-primary text-sm">
-          + Cadastrar árvore
-        </a>
+        {data.userRole === 'tecnico' && (
+          <a href={`/${data.projectSlug}/painel/arvores/nova`} className="btn-primary text-sm">
+            + Cadastrar árvore
+          </a>
+        )}
         <a href={`/api/projects/${data.projectSlug}/export`} className="btn-secondary text-sm">
           Exportar CSV
         </a>
         <a href={`/${data.projectSlug}/relatorio`} className="bg-white text-verde-cerrado border border-verde-medio px-6 py-3 rounded-lg font-semibold hover:bg-verde-medio/5 transition-colors text-sm">
           Relatório de diversidade
         </a>
-        <a href={`/${data.projectSlug}/painel/observacoes`} className="bg-white text-terracota border border-terracota px-6 py-3 rounded-lg font-semibold hover:bg-terracota/5 transition-colors text-sm">
+        <a href={`/${data.projectSlug}/painel/observacoes`} className="bg-white text-terracota border border-terracota px-6 py-3 rounded-lg font-semibold hover:bg-terracota/5 transition-colors text-sm relative">
           Observações dos moradores
+          {(data.pendingObservations ?? 0) > 0 && (
+            <span className="absolute -top-2 -right-2 bg-terracota text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+              {data.pendingObservations}
+            </span>
+          )}
         </a>
+        {data.userRole === 'gestor' && (
+          <a href={`/${data.projectSlug}/painel/especies`} className="bg-white text-verde-cerrado border border-verde-cerrado px-6 py-3 rounded-lg font-semibold hover:bg-verde-cerrado/5 transition-colors text-sm">
+            + Sugerir espécie
+          </a>
+        )}
         {data.userRole === 'tecnico' && (
           <>
             <a href={`/${data.projectSlug}/visita`} className="bg-verde-medio text-white px-6 py-3 rounded-lg font-semibold hover:bg-verde-medio/90 transition-colors text-sm">
@@ -117,6 +151,11 @@ export default function PainelClient({ data }: { data: PainelData }) {
               Histórico de visitas
             </a>
           </>
+        )}
+        {data.userRole === 'gestor' && (
+          <a href={`/${data.projectSlug}/painel/visitas`} className="bg-white text-verde-cerrado border border-verde-cerrado px-6 py-3 rounded-lg font-semibold hover:bg-verde-cerrado/5 transition-colors text-sm">
+            Histórico de visitas
+          </a>
         )}
       </div>
 

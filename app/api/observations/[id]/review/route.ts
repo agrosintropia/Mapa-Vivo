@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
-const VALID_ACTIONS = ['validada', 'consulta_tecnica', 'descartada'];
+const VALID_ACTIONS = ['aceita', 'rejeitada', 'revisao_online', 'pendente_visita'];
 
 export async function PUT(
   request: Request,
@@ -46,7 +46,7 @@ export async function PUT(
     },
   });
 
-  if (action === 'validada' && observation.description) {
+  if (action === 'aceita' && observation.description) {
     await prisma.treeEvent.create({
       data: {
         tree_id: observation.tree_id,
@@ -55,6 +55,21 @@ export async function PUT(
         author_role: 'gestor',
       },
     });
+  }
+
+  if (action === 'revisao_online') {
+    const tree = await prisma.tree.findUnique({ where: { id: observation.tree_id } });
+    if (tree) {
+      await prisma.reviewRequest.create({
+        data: {
+          project_id: tree.project_id,
+          entity_type: 'observation',
+          entity_id: observation.id,
+          requested_by: session.user.id,
+          reason: note || `Revisão solicitada para observação de ${observation.user_name}`,
+        },
+      });
+    }
   }
 
   return NextResponse.json(updated);

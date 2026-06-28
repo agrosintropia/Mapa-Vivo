@@ -47,6 +47,8 @@ export interface PainelData {
   totalTrees: number;
   recentSubmissions: PendingSubmission[];
   userRole: string;
+  inviteCode?: string | null;
+  pendingObservations?: number;
 }
 
 export default async function PainelPage({ params }: PageProps) {
@@ -85,7 +87,7 @@ export default async function PainelPage({ params }: PageProps) {
   try {
     const project = await prisma.project.findUnique({
       where: { slug: projectSlug },
-      select: { id: true, name: true, slug: true },
+      select: { id: true, name: true, slug: true, invite_code: true, gestor_email: true },
     });
 
     if (!project) notFound();
@@ -124,9 +126,15 @@ export default async function PainelPage({ params }: PageProps) {
       where: { project_id: project.id, status: 'pendente' },
     });
 
+    const pendingObservations = await prisma.treeObservation.count({
+      where: { tree: { project_id: project.id }, status: 'pendente' },
+    });
+
     const painelData: PainelData = {
       projectName: project.name,
       projectSlug: project.slug,
+      inviteCode: project.invite_code,
+      pendingObservations,
       trees: trees.map(t => ({
         ...t,
         planted_date: t.planted_date?.toISOString() ?? null,

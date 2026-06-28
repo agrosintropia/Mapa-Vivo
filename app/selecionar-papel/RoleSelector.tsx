@@ -51,10 +51,13 @@ export default function RoleSelector({ userName }: RoleSelectorProps) {
         return;
       }
 
+      const data = await res.json();
       if (selected === 'morador') {
         router.push('/mata-viva/mapa');
       } else if (selected === 'tecnico') {
         router.push('/projetos');
+      } else if (data.projectSlug) {
+        router.push(`/${data.projectSlug}/painel`);
       } else {
         router.push('/mata-viva/painel');
       }

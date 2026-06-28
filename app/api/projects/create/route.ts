@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, type, city, state, biome, description, boundary, area_hectares, sub_areas } = body;
+    const { name, type, city, state, biome, description, boundary, area_hectares, sub_areas, gestor_email } = body;
 
     if (!name || !type || !city || !state || !biome) {
       return NextResponse.json({ error: 'Campos obrigatórios: nome, tipo, cidade, estado, bioma' }, { status: 400 });
@@ -37,6 +37,8 @@ export async function POST(request: NextRequest) {
     if (existing) {
       slug = `${slug}-${Date.now().toString(36)}`;
     }
+
+    const invite_code = crypto.randomUUID().slice(0, 8);
 
     const project = await prisma.project.create({
       data: {
@@ -50,6 +52,8 @@ export async function POST(request: NextRequest) {
         boundary: boundary || null,
         area_hectares: area_hectares ? parseFloat(area_hectares) : null,
         created_by: (session.user as unknown as Record<string, string>).id || null,
+        gestor_email: gestor_email || null,
+        invite_code,
       },
     });
 

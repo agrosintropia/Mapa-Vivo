@@ -45,6 +45,8 @@ export default function NewProjectForm() {
   const [biome, setBiome] = useState('Cerrado');
   const [description, setDescription] = useState('');
 
+  const [gestorEmail, setGestorEmail] = useState('');
+
   // Step 2: Area/boundary
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [boundary, setBoundary] = useState<any>(null);
@@ -149,6 +151,7 @@ export default function NewProjectForm() {
         state,
         biome,
         description: description || null,
+        gestor_email: gestorEmail || null,
         boundary,
         area_hectares: areaHectares || null,
         sub_areas: subAreas
@@ -283,6 +286,20 @@ export default function NewProjectForm() {
             >
               {BIOMES.map(b => <option key={b} value={b}>{b}</option>)}
             </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">E-mail do gestor (opcional)</label>
+            <input
+              type="email"
+              value={gestorEmail}
+              onChange={e => setGestorEmail(e.target.value)}
+              placeholder="Ex: sindico@condominio.com.br"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-verde-medio/50"
+            />
+            <p className="text-xs text-gray-400 mt-1">
+              O gestor receberá um convite para acessar o painel do projeto.
+            </p>
           </div>
 
           <div>

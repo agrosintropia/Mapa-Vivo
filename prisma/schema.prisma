@@ -21,11 +21,40 @@ model Project {
   boundary      Json? // GeoJSON polygon/multipolygon from KML/KMZ
   description   String?
   created_by    String?
+  invite_code   String?      @unique
+  gestor_email  String?
   created_at    DateTime     @default(now())
   trees         Tree[]
   submissions   Submission[]
   sub_areas     SubArea[]
   visits        TechnicalVisit[]
+  members       ProjectMember[]
+  review_requests ReviewRequest[]
+}
+
+model ProjectMember {
+  id         String   @id @default(uuid())
+  project_id String
+  user_id    String
+  role       String // gestor|morador
+  joined_at  DateTime @default(now())
+  project    Project  @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@unique([project_id, user_id])
+}
+
+model ReviewRequest {
+  id          String   @id @default(uuid())
+  project_id  String
+  entity_type String // observation|species
+  entity_id   String
+  requested_by String
+  reason      String
+  status      String   @default("aberto") // aberto|em_analise|resolvido
+  response    String?
+  created_at  DateTime @default(now())
+  resolved_at DateTime?
+  project     Project  @relation(fields: [project_id], references: [id], onDelete: Cascade)
 }
 
 model TechnicalVisit {
@@ -81,6 +110,8 @@ model Species {
   fauna_attracted       String?
   subclasses            String[]
   default_carbon_factor Float?
+  added_by              String?
+  validation_status     String   @default("validada") // validada|pendente_validacao|recusada
   trees                 Tree[]
 }
 
@@ -124,7 +155,7 @@ model TreeObservation {
   description String?
   audio_url   String?
   photo_urls  String[]
-  status      String   @default("pendente") // pendente|validada|consulta_tecnica|descartada
+  status      String   @default("pendente") // pendente|aceita|rejeitada|revisao_online|pendente_visita
   reviewer_note String?
   created_at  DateTime @default(now())
   tree        Tree     @relation(fields: [tree_id], references: [id])

@@ -12,16 +12,18 @@ const TYPE_LABELS: Record<string, string> = {
 
 const STATUS_LABELS: Record<string, string> = {
   pendente: 'Pendente',
-  validada: 'Validada',
-  consulta_tecnica: 'Consulta técnica',
-  descartada: 'Descartada',
+  aceita: 'Aceita',
+  rejeitada: 'Rejeitada',
+  revisao_online: 'Revisão online',
+  pendente_visita: 'Pendente visita',
 };
 
 const STATUS_COLORS: Record<string, string> = {
   pendente: 'bg-ocre/10 text-ocre',
-  validada: 'bg-verde-medio/10 text-verde-medio',
-  consulta_tecnica: 'bg-blue-50 text-blue-600',
-  descartada: 'bg-gray-100 text-gray-500',
+  aceita: 'bg-verde-medio/10 text-verde-medio',
+  rejeitada: 'bg-terracota/10 text-terracota',
+  revisao_online: 'bg-blue-50 text-blue-600',
+  pendente_visita: 'bg-purple-50 text-purple-600',
 };
 
 interface ObservationData {
@@ -87,7 +89,7 @@ export default function ObservationReviewClient({ observations: initial, project
     <div className="flex-1 p-4 md:p-8 max-w-4xl mx-auto w-full space-y-6">
       {/* Filter tabs */}
       <div className="flex gap-2 flex-wrap">
-        {['pendente', 'validada', 'consulta_tecnica', 'descartada', 'todas'].map((f) => (
+        {['pendente', 'aceita', 'rejeitada', 'revisao_online', 'pendente_visita', 'todas'].map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
@@ -177,25 +179,32 @@ export default function ObservationReviewClient({ observations: initial, project
                       />
                       <div className="flex gap-2 flex-wrap">
                         <button
-                          onClick={() => handleReview(obs.id, 'validada')}
+                          onClick={() => handleReview(obs.id, 'aceita')}
                           disabled={processing}
                           className="bg-verde-medio text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-verde-cerrado transition-colors cursor-pointer disabled:opacity-50"
                         >
-                          ✓ Validar e adicionar à ficha
+                          ✓ Aceitar
                         </button>
                         <button
-                          onClick={() => handleReview(obs.id, 'consulta_tecnica')}
+                          onClick={() => handleReview(obs.id, 'rejeitada')}
+                          disabled={processing}
+                          className="bg-terracota text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-terracota/80 transition-colors cursor-pointer disabled:opacity-50"
+                        >
+                          ✕ Rejeitar
+                        </button>
+                        <button
+                          onClick={() => handleReview(obs.id, 'revisao_online')}
                           disabled={processing}
                           className="bg-blue-500 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors cursor-pointer disabled:opacity-50"
                         >
-                          🔬 Solicitar consulta técnica
+                          🔬 Revisão online (técnico)
                         </button>
                         <button
-                          onClick={() => handleReview(obs.id, 'descartada')}
+                          onClick={() => handleReview(obs.id, 'pendente_visita')}
                           disabled={processing}
-                          className="bg-gray-200 text-gray-600 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-300 transition-colors cursor-pointer disabled:opacity-50"
+                          className="bg-purple-500 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-purple-600 transition-colors cursor-pointer disabled:opacity-50"
                         >
-                          ✕ Descartar
+                          📋 Pendente próxima visita
                         </button>
                         <button
                           onClick={() => { setReviewingId(null); setReviewNote(''); }}
