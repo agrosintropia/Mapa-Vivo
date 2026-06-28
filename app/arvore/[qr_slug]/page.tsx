@@ -449,17 +449,46 @@ export default async function TreeProfilePage({ params }: PageProps) {
           Ver no mapa
         </a>
 
-        {/* ── Footer info ── */}
-        <div className="text-center mt-6 space-y-1">
+        {/* ── Tree ID ── */}
+        <div className="text-center mt-6 mb-4">
           <p className="text-xs text-gray-400">
             Identificador: <span className="font-mono font-medium">{tree.qr_slug}</span>
           </p>
           <p className="text-xs text-gray-400">
-            {project.name} · {project.city}, {project.state}
+            {project.name} &middot; {project.city}, {project.state}
           </p>
-          <p className="text-xs text-gray-300 mt-2">
-            Mapa Vivo — Agrosintropia
+        </div>
+
+        {/* ── Mapa Vivo footer ── */}
+        <div className="bg-verde-cerrado rounded-2xl p-6 text-white text-center space-y-3">
+          <div className="flex items-center justify-center gap-2">
+            <span className="text-2xl">🌳</span>
+            <span className="font-display text-xl font-bold">Mapa Vivo</span>
+          </div>
+          <p className="text-sm opacity-80 leading-relaxed">
+            Inventário arbóreo digital para condomínios, parques e agroflorestas.
+            Cada árvore ganha identidade — mapa interativo, QR code e relatórios ambientais.
           </p>
+          <div className="flex flex-col items-center gap-2 pt-2">
+            <a
+              href="/"
+              className="bg-white/20 hover:bg-white/30 transition-colors px-5 py-2 rounded-lg text-sm font-semibold"
+            >
+              Conheça a plataforma
+            </a>
+          </div>
+          <div className="border-t border-white/20 pt-3 mt-3 space-y-1">
+            <p className="text-xs font-semibold opacity-90">Agrosintropia</p>
+            <p className="text-xs opacity-70">Consultoria em meio ambiente e agroflorestas</p>
+            <div className="flex items-center justify-center gap-3 text-xs opacity-70">
+              <a href="mailto:agrosintropia@gmail.com" className="hover:opacity-100 hover:underline">
+                agrosintropia@gmail.com
+              </a>
+            </div>
+            <p className="text-xs opacity-50 pt-1">
+              Goiânia, GO &middot; Brasil
+            </p>
+          </div>
         </div>
       </div>
     </main>
