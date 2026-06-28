@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useCallback } from 'react';
+import { useMemo, useState, useCallback, useEffect } from 'react';
 import { MapContainer, TileLayer, CircleMarker, Popup, Polyline, Marker, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -97,7 +97,23 @@ export default function LeafletMap({ project, allTrees, filteredTrees, speciesCo
   const [navigatingTo, setNavigatingTo] = useState<TreeData | null>(null);
   const [locating, setLocating] = useState(false);
 
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        setUserLocation([pos.coords.latitude, pos.coords.longitude]);
+      },
+      () => {},
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 }
+    );
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, []);
+
   const startNavigation = useCallback((tree: TreeData) => {
+    if (userLocation) {
+      setNavigatingTo(tree);
+      return;
+    }
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
@@ -111,11 +127,10 @@ export default function LeafletMap({ project, allTrees, filteredTrees, speciesCo
       },
       { enableHighAccuracy: true, timeout: 10000 }
     );
-  }, []);
+  }, [userLocation]);
 
   const stopNavigation = useCallback(() => {
     setNavigatingTo(null);
-    setUserLocation(null);
   }, []);
 
   const navDistance = useMemo(() => {
