@@ -58,7 +58,10 @@ export default async function PainelPage({ params }: PageProps) {
   }
 
   const userRole = (session.user as Record<string, unknown>).role as string | undefined;
-  if (!userRole || (userRole !== 'gestor' && userRole !== 'tecnico')) {
+  if (!userRole) {
+    redirect('/selecionar-papel');
+  }
+  if (userRole !== 'gestor' && userRole !== 'tecnico') {
     return (
       <main className="min-h-screen bg-areia flex flex-col">
         <header className="bg-verde-cerrado text-white px-4 py-3 flex items-center gap-3 shadow-md">
@@ -150,7 +153,7 @@ export default async function PainelPage({ params }: PageProps) {
           <nav className="flex items-center gap-4 text-sm">
             <a href={`/${project.slug}/mapa`} className="hover:underline opacity-80 hover:opacity-100">Mapa</a>
             <a href={`/${project.slug}/dashboard`} className="hover:underline opacity-80 hover:opacity-100">Dashboard</a>
-            <span className="bg-white/20 px-2 py-0.5 rounded text-xs capitalize">{userRole}</span>
+            <a href="/selecionar-papel/trocar" className="bg-white/20 px-2 py-0.5 rounded text-xs capitalize hover:bg-white/30 transition-colors">{userRole} ✎</a>
           </nav>
         </header>
         <PainelClient data={painelData} />
