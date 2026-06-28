@@ -50,6 +50,9 @@ interface ReviewRow {
   entityId: string;
   reason: string;
   status: string;
+  treeCount: number | null;
+  reviewFee: number | null;
+  billingPaid: boolean;
   createdAt: string;
 }
 
@@ -60,6 +63,10 @@ interface VisitRow {
   technicianName: string;
   purpose: string;
   status: string;
+  baseFee: number;
+  travelCost: number | null;
+  totalBilled: number | null;
+  billingPaid: boolean;
   startedAt: string;
   finishedAt: string | null;
   actionCount: number;
@@ -76,6 +83,10 @@ interface Metrics {
   monthlyRevenue: number;
   totalSetupFees: number;
   setupPending: number;
+  visitRevenue: number;
+  visitsPending: number;
+  reviewRevenue: number;
+  reviewsPending: number;
 }
 
 interface Props {
@@ -201,7 +212,9 @@ export default function AdminDashboard({ data }: Props) {
             <MetricCard label="Técnicos" value={data.metrics.totalTechnicians} icon="🔬" />
             <MetricCard label="Revisões abertas" value={data.metrics.openReviews} icon="📋" highlight={data.metrics.openReviews > 0} />
             <MetricCard label="Receita mensal" value={`R$ ${data.metrics.monthlyRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`} icon="💰" />
-            <MetricCard label="Total projetos" value={data.metrics.totalProjects} icon="📊" />
+            <MetricCard label="Visitas técnicas" value={`R$ ${data.metrics.visitRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`} icon="🚗" highlight={data.metrics.visitsPending > 0} />
+            <MetricCard label="Revisões online" value={`R$ ${data.metrics.reviewRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`} icon="🔍" highlight={data.metrics.reviewsPending > 0} />
+            <MetricCard label="Setup fees" value={`R$ ${data.metrics.totalSetupFees.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`} icon="🏷️" highlight={data.metrics.setupPending > 0} />
           </div>
 
           {/* Quick actions */}
@@ -416,6 +429,28 @@ export default function AdminDashboard({ data }: Props) {
               </div>
             </div>
           </div>
+
+          {/* Service pricing reference */}
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <h3 className="font-bold text-verde-cerrado mb-4">Tabela de serviços avulsos</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h4 className="font-medium text-gray-700 mb-2">Visita técnica presencial</h4>
+                <div className="text-sm text-gray-600 space-y-1 bg-gray-50 rounded-lg p-3">
+                  <p className="font-medium text-verde-cerrado text-lg">R$ 1.800,00</p>
+                  <p className="text-gray-400">+ custos de deslocamento, hospedagem e alimentação</p>
+                </div>
+              </div>
+              <div>
+                <h4 className="font-medium text-gray-700 mb-2">Revisão técnica online</h4>
+                <div className="text-sm space-y-1 bg-gray-50 rounded-lg p-3">
+                  <div className="flex justify-between"><span className="text-gray-600">1 a 10 árvores</span><span className="font-medium text-verde-cerrado">R$ 150,00</span></div>
+                  <div className="flex justify-between"><span className="text-gray-600">11 a 30 árvores</span><span className="font-medium text-verde-cerrado">R$ 250,00</span></div>
+                  <div className="flex justify-between"><span className="text-gray-600">31 a 50 árvores</span><span className="font-medium text-verde-cerrado">R$ 350,00</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
@@ -481,6 +516,7 @@ export default function AdminDashboard({ data }: Props) {
                   <th className="text-left py-3 px-4 font-medium text-gray-500">Objetivo</th>
                   <th className="text-center py-3 px-4 font-medium text-gray-500">Ações</th>
                   <th className="text-center py-3 px-4 font-medium text-gray-500">Status</th>
+                  <th className="text-right py-3 px-4 font-medium text-gray-500">Valor</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-500">Data</th>
                 </tr>
               </thead>
@@ -501,6 +537,23 @@ export default function AdminDashboard({ data }: Props) {
                       }`}>
                         {v.status === 'finalizada' ? 'Finalizada' : 'Em andamento'}
                       </span>
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      {v.totalBilled ? (
+                        <div className="text-xs">
+                          <span className={`font-medium ${v.billingPaid ? 'text-verde-medio' : 'text-ocre'}`}>
+                            R$ {v.totalBilled.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          </span>
+                          <br />
+                          <span className="text-gray-400">
+                            {v.billingPaid ? '✓ Pago' : 'Pendente'}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-gray-400">
+                          R$ {v.baseFee.toLocaleString('pt-BR')} + desloc.
+                        </span>
+                      )}
                     </td>
                     <td className="py-3 px-4 text-gray-500 text-xs">
                       {new Date(v.startedAt).toLocaleDateString('pt-BR')}
@@ -549,6 +602,15 @@ function ReviewCard({ review, onResolve }: { review: ReviewRow; onResolve: (id: 
         </span>
       </div>
       <p className="text-sm text-gray-700 bg-gray-50 rounded-lg p-3">{review.reason}</p>
+      {review.reviewFee && (
+        <div className="flex items-center gap-3 text-xs">
+          <span className="text-gray-500">{review.treeCount} árvore(s)</span>
+          <span className={`font-medium ${review.billingPaid ? 'text-verde-medio' : 'text-ocre'}`}>
+            R$ {review.reviewFee.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            {review.billingPaid ? ' ✓ Pago' : ' Pendente'}
+          </span>
+        </div>
+      )}
       {!responding ? (
         <button
           onClick={() => setResponding(true)}

@@ -72,6 +72,9 @@ model ReviewRequest {
   reason      String
   status      String   @default("aberto") // aberto|em_analise|resolvido
   response    String?
+  tree_count  Int?
+  review_fee  Float?
+  billing_paid Boolean  @default(false)
   created_at  DateTime @default(now())
   resolved_at DateTime?
   project     Project  @relation(fields: [project_id], references: [id], onDelete: Cascade)
@@ -85,6 +88,10 @@ model TechnicalVisit {
   purpose        String
   notes          String?
   status         String        @default("em_andamento") // em_andamento|finalizada
+  base_fee       Float         @default(1800)
+  travel_cost    Float?
+  total_billed   Float?
+  billing_paid   Boolean       @default(false)
   started_at     DateTime      @default(now())
   finished_at    DateTime?
   project        Project       @relation(fields: [project_id], references: [id], onDelete: Cascade)

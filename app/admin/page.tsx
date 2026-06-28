@@ -30,7 +30,7 @@ export default async function AdminPage() {
     await prisma.profile.update({ where: { id: session.user.id }, data: { role: 'admin' } });
   }
 
-  const [projects, plans, technicians, reviewRequests, totalTrees, totalSpecies, totalObservations, recentVisits] = await Promise.all([
+  const [projects, plans, technicians, reviewRequests, totalTrees, totalSpecies, totalObservations, recentVisits, allBilledVisits, allBilledReviews] = await Promise.all([
     prisma.project.findMany({
       include: {
         plan: true,
@@ -60,6 +60,8 @@ export default async function AdminPage() {
         _count: { select: { actions: true } },
       },
     }),
+    prisma.technicalVisit.findMany({ where: { total_billed: { not: null } } }),
+    prisma.reviewRequest.findMany({ where: { review_fee: { not: null } } }),
   ]);
 
   const data = {
@@ -108,6 +110,9 @@ export default async function AdminPage() {
       entityId: r.entity_id,
       reason: r.reason,
       status: r.status,
+      treeCount: r.tree_count,
+      reviewFee: r.review_fee,
+      billingPaid: r.billing_paid,
       createdAt: r.created_at.toISOString(),
     })),
     recentVisits: recentVisits.map(v => ({
@@ -117,6 +122,10 @@ export default async function AdminPage() {
       technicianName: v.technician_name,
       purpose: v.purpose,
       status: v.status,
+      baseFee: v.base_fee,
+      travelCost: v.travel_cost,
+      totalBilled: v.total_billed,
+      billingPaid: v.billing_paid,
       startedAt: v.started_at.toISOString(),
       finishedAt: v.finished_at?.toISOString() || null,
       actionCount: v._count.actions,
@@ -132,6 +141,10 @@ export default async function AdminPage() {
       monthlyRevenue: projects.reduce((sum, p) => sum + (p.plan?.monthly_price || 0), 0),
       totalSetupFees: projects.reduce((sum, p) => sum + (p.setup_fee || 0), 0),
       setupPending: projects.filter(p => p.setup_fee && !p.setup_paid).length,
+      visitRevenue: allBilledVisits.reduce((sum, v) => sum + (v.total_billed || 0), 0),
+      visitsPending: allBilledVisits.filter(v => !v.billing_paid).length,
+      reviewRevenue: allBilledReviews.reduce((sum, r) => sum + (r.review_fee || 0), 0),
+      reviewsPending: allBilledReviews.filter(r => !r.billing_paid).length,
     },
   };
 
