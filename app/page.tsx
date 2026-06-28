@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { prisma } from '@/lib/prisma';
+import { auth } from '@/lib/auth';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
@@ -97,11 +98,34 @@ const FEATURES = [
 
 export default async function Home() {
   const projects = await getProjects();
+  const session = await auth();
+  const userRole = session?.user ? (session.user as unknown as Record<string, unknown>).role as string | undefined : undefined;
+  const firstSlug = projects[0]?.slug;
 
   return (
     <main className="min-h-screen bg-areia flex flex-col">
+      {/* Nav bar */}
+      <nav className="absolute top-0 right-0 p-4 z-50 flex items-center gap-3">
+        {session?.user ? (
+          <>
+            {userRole && (userRole === 'gestor' || userRole === 'tecnico') && firstSlug && (
+              <Link href={`/${firstSlug}/painel`} className="bg-white/20 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-white/30 transition-colors">
+                Painel
+              </Link>
+            )}
+            <Link href="/selecionar-papel/trocar" className="bg-white/10 text-white px-4 py-2 rounded-lg text-sm hover:bg-white/20 transition-colors">
+              {session.user.name?.split(' ')[0]} ({userRole || 'sem papel'})
+            </Link>
+          </>
+        ) : (
+          <Link href="/login" className="bg-white/20 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-white/30 transition-colors">
+            Entrar
+          </Link>
+        )}
+      </nav>
+
       {/* Hero */}
-      <section className="bg-verde-cerrado text-white">
+      <section className="bg-verde-cerrado text-white relative">
         <div className="max-w-5xl mx-auto px-4 py-16 md:py-24 text-center">
           <span className="text-6xl block mb-6">🌳</span>
           <h1 className="font-display text-4xl md:text-6xl font-bold tracking-tight mb-4">

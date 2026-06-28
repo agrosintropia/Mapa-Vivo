@@ -51,7 +51,12 @@ export default function RoleSelector({ userName }: RoleSelectorProps) {
         return;
       }
 
-      router.push('/');
+      const profile = await res.json();
+      if (selected === 'morador') {
+        router.push('/mata-viva/mapa');
+      } else {
+        router.push('/mata-viva/painel');
+      }
       router.refresh();
     } catch {
       alert('Erro de conexão. Tente novamente.');
