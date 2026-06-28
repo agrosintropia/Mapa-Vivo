@@ -8,6 +8,7 @@ const OBSERVATION_TYPES = [
   { id: 'frutificacao', label: 'Frutificação', icon: '🍎' },
   { id: 'floracao', label: 'Floração', icon: '🌸' },
   { id: 'fauna', label: 'Fauna observada', icon: '🦜' },
+  { id: 'identificacao', label: 'Sugerir identificação', icon: '🔍' },
   { id: 'outro', label: 'Outra observação', icon: '📋' },
 ];
 
@@ -164,13 +165,30 @@ export default function ObservationModal({ tree, projectSlug, onClose }: Props) 
             </div>
           </div>
 
+          {/* Identification hint */}
+          {type === 'identificacao' && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-700">
+              <p className="font-medium mb-1">Você conhece esta espécie?</p>
+              <p className="text-xs">
+                Informe o nome popular (e científico, se souber) na descrição abaixo.
+                {tree.species.common_name === 'Não identificada'
+                  ? ' Esta árvore ainda não foi identificada — sua sugestão será muito útil!'
+                  : ' Sua sugestão será revisada pelo gestor ou técnico do projeto.'}
+              </p>
+            </div>
+          )}
+
           {/* Description */}
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">Descrição</label>
+            <label className="text-sm font-medium text-gray-700 block mb-1">
+              {type === 'identificacao' ? 'Nome da espécie sugerida' : 'Descrição'}
+            </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Descreva o que você observou..."
+              placeholder={type === 'identificacao'
+                ? 'Ex: Ipê-amarelo (Handroanthus albus) — é muito comum na região...'
+                : 'Descreva o que você observou...'}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none h-24 focus:ring-2 focus:ring-verde-medio/50 focus:border-verde-medio outline-none"
             />
           </div>

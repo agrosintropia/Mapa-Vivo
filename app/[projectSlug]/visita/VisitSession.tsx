@@ -33,7 +33,7 @@ interface ActionLog {
   time: string;
 }
 
-type Panel = 'inicio' | 'sessao' | 'adicionar' | 'editar_arvore' | 'remover' | 'editar_especie' | 'adicionar_subarea' | 'finalizar';
+type Panel = 'inicio' | 'sessao' | 'adicionar' | 'nova_especie' | 'editar_arvore' | 'remover' | 'editar_especie' | 'adicionar_subarea' | 'finalizar';
 
 const STATUS_OPTS = [
   { value: 'viva', label: 'Viva' },
@@ -94,6 +94,14 @@ export default function VisitSession({
   const [editSpecFamily, setEditSpecFamily] = useState('');
   const [editSpecDescription, setEditSpecDescription] = useState('');
 
+  // New species form
+  const [speciesList, setSpeciesList] = useState(species);
+  const [newSpecCommon, setNewSpecCommon] = useState('');
+  const [newSpecScientific, setNewSpecScientific] = useState('');
+  const [newSpecFamily, setNewSpecFamily] = useState('');
+  const [newSpecStrata, setNewSpecStrata] = useState('medio');
+  const [newSpecUnidentified, setNewSpecUnidentified] = useState(false);
+
   // Add sub-area
   const [saName, setSaName] = useState('');
   const [saDescription, setSaDescription] = useState('');
@@ -101,11 +109,62 @@ export default function VisitSession({
   const normalize = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 
   const filteredSpecies = addSpeciesSearch.length > 1
-    ? species.filter(s =>
+    ? speciesList.filter(s =>
         normalize(s.common_name).includes(normalize(addSpeciesSearch)) ||
         normalize(s.scientific_name).includes(normalize(addSpeciesSearch))
       ).slice(0, 8)
     : [];
+
+  const showNewSpeciesOption = addSpeciesSearch.length > 1 && !addSpeciesId && filteredSpecies.length < 3;
+
+  const handleCreateSpecies = async () => {
+    if (!newSpecCommon.trim() && !newSpecUnidentified) { setError('Nome popular obrigatório'); return; }
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetch('/api/species', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          common_name: newSpecUnidentified ? 'Não identificada' : newSpecCommon,
+          scientific_name: newSpecUnidentified ? 'Não identificada' : (newSpecScientific || 'Não identificada'),
+          family: newSpecFamily || 'Não identificada',
+          strata: newSpecStrata,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      const newSpec: SpeciesItem = {
+        id: data.id,
+        common_name: data.common_name,
+        scientific_name: data.scientific_name,
+        family: newSpecFamily || 'Não identificada',
+        strata: newSpecStrata,
+        description: null,
+        ecological_function: null,
+        fruiting_season: null,
+        fauna_attracted: null,
+        subclasses: [],
+      };
+      setSpeciesList(prev => [...prev, newSpec]);
+      setAddSpeciesId(data.id);
+      setAddSpeciesSearch(data.common_name);
+      setActions(prev => [...prev, {
+        type: 'adicao_especie',
+        summary: `Nova espécie: ${data.common_name}`,
+        time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+      }]);
+
+      setNewSpecCommon(''); setNewSpecScientific(''); setNewSpecFamily('');
+      setNewSpecStrata('medio'); setNewSpecUnidentified(false);
+      setPanel('adicionar');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Erro ao criar espécie');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const startVisit = async () => {
     if (!purpose.trim()) { setError('Informe a finalidade da visita'); return; }
@@ -487,6 +546,23 @@ export default function VisitSession({
                 </div>
               )}
               {addSpeciesId && <p className="text-xs text-verde-cerrado mt-1">✓ Espécie selecionada</p>}
+              {showNewSpeciesOption && !addSpeciesId && (
+                <div className="mt-2 flex gap-2">
+                  <button
+                    onClick={() => { setNewSpecCommon(addSpeciesSearch); setNewSpecUnidentified(false); setPanel('nova_especie'); }}
+                    className="text-sm text-purple-600 hover:underline cursor-pointer font-medium"
+                  >
+                    + Cadastrar nova espécie
+                  </button>
+                  <span className="text-gray-300">|</span>
+                  <button
+                    onClick={() => { setNewSpecUnidentified(true); setPanel('nova_especie'); }}
+                    className="text-sm text-ocre hover:underline cursor-pointer font-medium"
+                  >
+                    ? Espécie não identificada
+                  </button>
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -541,6 +617,70 @@ export default function VisitSession({
                 {loading ? 'Salvando...' : 'Salvar e cadastrar próxima'}
               </button>
             </div>
+          </div>
+        )}
+
+        {/* NEW SPECIES */}
+        {panel === 'nova_especie' && (
+          <div className="card space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="font-display text-lg font-bold text-purple-700">
+                {newSpecUnidentified ? 'Espécie Não Identificada' : 'Cadastrar Nova Espécie'}
+              </h2>
+              <button onClick={() => setPanel('adicionar')} className="text-sm text-gray-500 hover:underline cursor-pointer">Voltar</button>
+            </div>
+
+            {newSpecUnidentified ? (
+              <div className="bg-ocre/10 border border-ocre/30 rounded-lg p-4 space-y-2">
+                <p className="text-sm text-gray-700">
+                  A árvore será cadastrada como <strong>&quot;Não identificada&quot;</strong>.
+                </p>
+                <p className="text-xs text-gray-500">
+                  Moradores que conhecerem a espécie poderão sugerir a identificação via observação.
+                  O gestor ou técnico validará a sugestão posteriormente.
+                </p>
+              </div>
+            ) : (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Nome popular *</label>
+                  <input type="text" value={newSpecCommon} onChange={e => setNewSpecCommon(e.target.value)}
+                    placeholder="Ex: Ipê-amarelo, Jatobá..."
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-verde-medio/50" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Nome científico</label>
+                  <input type="text" value={newSpecScientific} onChange={e => setNewSpecScientific(e.target.value)}
+                    placeholder="Ex: Handroanthus albus"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-verde-medio/50" />
+                  <p className="text-xs text-gray-400 mt-1">Deixe em branco se não souber</p>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Família</label>
+                    <input type="text" value={newSpecFamily} onChange={e => setNewSpecFamily(e.target.value)}
+                      placeholder="Ex: Bignoniaceae"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-verde-medio/50" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Estrato</label>
+                    <select value={newSpecStrata} onChange={e => setNewSpecStrata(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white cursor-pointer">
+                      <option value="emergente">Emergente</option>
+                      <option value="alto">Alto</option>
+                      <option value="medio">Médio</option>
+                      <option value="baixo">Baixo</option>
+                      <option value="arbustivo">Arbustivo</option>
+                    </select>
+                  </div>
+                </div>
+              </>
+            )}
+
+            <button onClick={handleCreateSpecies} disabled={loading || (!newSpecUnidentified && !newSpecCommon.trim())}
+              className="btn-primary w-full disabled:opacity-50">
+              {loading ? 'Cadastrando...' : newSpecUnidentified ? 'Cadastrar como não identificada' : 'Cadastrar espécie e continuar'}
+            </button>
           </div>
         )}
 

@@ -191,8 +191,13 @@ export default function LeafletMap({ project, allTrees, filteredTrees, speciesCo
                   <p className="font-bold text-verde-cerrado text-base mb-0.5">
                     {tree.species.common_name}
                   </p>
+                  {tree.species.common_name === 'Não identificada' && (
+                    <p className="text-xs text-ocre bg-ocre/10 px-2 py-0.5 rounded mb-1 font-medium">
+                      Conhece esta espécie? Envie uma observação!
+                    </p>
+                  )}
                   <p className="italic text-gray-500 text-xs mb-2">
-                    {tree.species.scientific_name}
+                    {tree.species.scientific_name !== 'Não identificada' ? tree.species.scientific_name : ''}
                   </p>
                   <p className="text-gray-700 mb-1">
                     <span className="font-medium">Status:</span>{' '}
