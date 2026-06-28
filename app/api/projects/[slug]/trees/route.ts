@@ -98,7 +98,7 @@ export async function POST(
     }
 
     const body = await request.json();
-    const { species_id, lat, lng, dbh_cm, height_m, status, planted_date, reliability } = body;
+    const { species_id, lat, lng, dbh_cm, height_m, status, planted_date, reliability, photo_url, notes } = body;
 
     if (!species_id || typeof lat !== 'number' || typeof lng !== 'number') {
       return NextResponse.json({ error: 'Campos obrigatórios faltando' }, { status: 400 });
@@ -121,6 +121,7 @@ export async function POST(
         status: status || 'viva',
         reliability: reliability || 'pendente',
         planted_date: planted_date ? new Date(planted_date) : null,
+        photo_url: photo_url ?? null,
         qr_slug,
       },
     });
@@ -129,7 +130,7 @@ export async function POST(
       data: {
         tree_id: tree.id,
         type: 'plantio',
-        description: 'Árvore cadastrada no sistema',
+        description: notes ? `Árvore cadastrada: ${notes}` : 'Árvore cadastrada no sistema',
         author_role: userRole,
       },
     });
