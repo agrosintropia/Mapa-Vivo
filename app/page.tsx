@@ -108,6 +108,11 @@ export default async function Home() {
       <nav className="absolute top-0 right-0 p-4 z-50 flex items-center gap-3">
         {session?.user ? (
           <>
+            {userRole === 'tecnico' && (
+              <Link href="/projetos/novo" className="bg-ocre text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-ocre/90 transition-colors">
+                + Novo Projeto
+              </Link>
+            )}
             {userRole && (userRole === 'gestor' || userRole === 'tecnico') && firstSlug && (
               <Link href={`/${firstSlug}/painel`} className="bg-white/20 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-white/30 transition-colors">
                 Painel
