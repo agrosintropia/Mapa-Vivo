@@ -54,7 +54,7 @@ export default function RoleSelector({ userName }: RoleSelectorProps) {
       if (selected === 'morador') {
         router.push('/mata-viva/mapa');
       } else if (selected === 'tecnico') {
-        router.push('/projetos/novo');
+        router.push('/projetos');
       } else {
         router.push('/mata-viva/painel');
       }

@@ -109,8 +109,8 @@ export default async function Home() {
         {session?.user ? (
           <>
             {userRole === 'tecnico' && (
-              <Link href="/projetos/novo" className="bg-ocre text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-ocre/90 transition-colors">
-                + Novo Projeto
+              <Link href="/projetos" className="bg-ocre text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-ocre/90 transition-colors">
+                Meus Projetos
               </Link>
             )}
             {userRole && (userRole === 'gestor' || userRole === 'tecnico') && firstSlug && (

@@ -173,7 +173,7 @@ export default function NewProjectForm() {
       }
 
       const { slug } = await res.json();
-      router.push(`/${slug}/painel`);
+      router.push(`/${slug}/visita`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao criar projeto');
     } finally {
