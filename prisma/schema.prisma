@@ -38,6 +38,10 @@ model Project {
   gestor_email  String?
   plan_id       String?
   status        String       @default("ativo") // ativo|inativo|trial|suspenso
+  setup_fee     Float?
+  setup_installments Int?
+  setup_payment String?      // avista|parcelado
+  setup_paid    Boolean      @default(false)
   created_at    DateTime     @default(now())
   plan          Plan?        @relation(fields: [plan_id], references: [id])
   trees         Tree[]

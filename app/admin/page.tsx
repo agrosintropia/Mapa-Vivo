@@ -74,6 +74,10 @@ export default async function AdminPage() {
       planName: p.plan?.display_name || 'Sem plano',
       planId: p.plan_id,
       gestorEmail: p.gestor_email,
+      setupFee: p.setup_fee,
+      setupInstallments: p.setup_installments,
+      setupPayment: p.setup_payment,
+      setupPaid: p.setup_paid,
       createdAt: p.created_at.toISOString(),
       treeCount: p._count.trees,
       memberCount: p._count.members,
@@ -126,6 +130,8 @@ export default async function AdminPage() {
       totalTechnicians: technicians.length,
       openReviews: reviewRequests.length,
       monthlyRevenue: projects.reduce((sum, p) => sum + (p.plan?.monthly_price || 0), 0),
+      totalSetupFees: projects.reduce((sum, p) => sum + (p.setup_fee || 0), 0),
+      setupPending: projects.filter(p => p.setup_fee && !p.setup_paid).length,
     },
   };
 

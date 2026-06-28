@@ -20,7 +20,8 @@ export default async function QRCodesPage({ params }: PageProps) {
   if (!session?.user) redirect('/login');
 
   const userRole = (session.user as unknown as Record<string, unknown>).role as string | undefined;
-  if (!userRole || (userRole !== 'gestor' && userRole !== 'tecnico' && userRole !== 'admin')) {
+  const ADMIN_EMAILS = ['agrosintropia@gmail.com'];
+  if (userRole !== 'admin' && !ADMIN_EMAILS.includes(session.user?.email || '')) {
     redirect(`/${projectSlug}/painel`);
   }
 

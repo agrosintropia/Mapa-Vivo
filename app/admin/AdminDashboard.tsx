@@ -13,6 +13,10 @@ interface ProjectRow {
   planName: string;
   planId: string | null;
   gestorEmail: string | null;
+  setupFee: number | null;
+  setupInstallments: number | null;
+  setupPayment: string | null;
+  setupPaid: boolean;
   createdAt: string;
   treeCount: number;
   memberCount: number;
@@ -70,6 +74,8 @@ interface Metrics {
   totalTechnicians: number;
   openReviews: number;
   monthlyRevenue: number;
+  totalSetupFees: number;
+  setupPending: number;
 }
 
 interface Props {
@@ -272,6 +278,7 @@ export default function AdminDashboard({ data }: Props) {
                   <th className="text-center py-3 px-4 font-medium text-gray-500">Membros</th>
                   <th className="text-center py-3 px-4 font-medium text-gray-500">Visitas</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-500">Gestor</th>
+                  <th className="text-center py-3 px-4 font-medium text-gray-500">Setup</th>
                   <th className="text-center py-3 px-4 font-medium text-gray-500">Ações</th>
                 </tr>
               </thead>
@@ -316,8 +323,26 @@ export default function AdminDashboard({ data }: Props) {
                     <td className="py-3 px-4 text-center">{p.visitCount}</td>
                     <td className="py-3 px-4 text-gray-500 text-xs">{p.gestorEmail || '—'}</td>
                     <td className="py-3 px-4 text-center">
+                      {p.setupFee ? (
+                        <div className="text-xs">
+                          <span className={`font-medium ${p.setupPaid ? 'text-verde-medio' : 'text-ocre'}`}>
+                            R$ {p.setupFee.toLocaleString('pt-BR')}
+                          </span>
+                          <br />
+                          <span className="text-gray-400">
+                            {p.setupPaid ? '✓ Pago' : p.setupPayment === 'parcelado' ? `${p.setupInstallments}x pendente` : 'À vista pendente'}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-gray-300 text-xs">—</span>
+                      )}
+                    </td>
+                    <td className="py-3 px-4 text-center space-x-2">
                       <a href={`/${p.slug}/painel`} className="text-verde-medio text-xs hover:underline">
-                        Abrir
+                        Painel
+                      </a>
+                      <a href={`/${p.slug}/painel/qrcodes`} className="text-ocre text-xs hover:underline">
+                        QR Codes
                       </a>
                     </td>
                   </tr>
