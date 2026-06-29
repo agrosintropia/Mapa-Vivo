@@ -97,23 +97,47 @@ export default function AppHeader({
               </>
             )}
 
-            {(userRole === 'gestor' || userRole === 'tecnico') && projectSlug && (
+            {userRole === 'morador' && projectSlug && (
+              <>
+                <Link href={`/${projectSlug}/submeter`} className="block px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors" onClick={() => setMenuOpen(false)}>
+                  Reportar observação
+                </Link>
+                <Link href={`/${projectSlug}/ajuda`} className="block px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors" onClick={() => setMenuOpen(false)}>
+                  Ajuda
+                </Link>
+              </>
+            )}
+
+            {userRole === 'gestor' && projectSlug && (
               <>
                 <div className="border-t border-gray-100 my-1" />
                 <Link href={`/${projectSlug}/painel`} className="block px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors" onClick={() => setMenuOpen(false)}>
                   Painel de gestão
                 </Link>
                 <Link href={`/${projectSlug}/painel/observacoes`} className="block px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors" onClick={() => setMenuOpen(false)}>
-                  Observações
+                  Revisões
                 </Link>
                 <Link href={`/${projectSlug}/painel/visitas`} className="block px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors" onClick={() => setMenuOpen(false)}>
                   Visitas técnicas
+                </Link>
+                <Link href={`/${projectSlug}/ajuda`} className="block px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors" onClick={() => setMenuOpen(false)}>
+                  Ajuda
                 </Link>
               </>
             )}
 
             {userRole === 'tecnico' && projectSlug && (
               <>
+                <div className="border-t border-gray-100 my-1" />
+                <Link href={`/${projectSlug}/painel`} className="block px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors" onClick={() => setMenuOpen(false)}>
+                  Painel de gestão
+                </Link>
+                <Link href={`/${projectSlug}/painel/observacoes`} className="block px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors" onClick={() => setMenuOpen(false)}>
+                  Revisões
+                </Link>
+                <Link href={`/${projectSlug}/painel/visitas`} className="block px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors" onClick={() => setMenuOpen(false)}>
+                  Visitas técnicas
+                </Link>
                 <Link href={`/${projectSlug}/visita`} className="block px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors" onClick={() => setMenuOpen(false)}>
                   Iniciar visita
                 </Link>
