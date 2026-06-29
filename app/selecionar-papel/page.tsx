@@ -16,8 +16,11 @@ export default async function SelecionarPapelPage() {
     where: { id: session.user.id },
   });
 
+  const ADMIN_EMAILS = ['agrosintropia@gmail.com'];
+  const isAdminEmail = ADMIN_EMAILS.includes(session.user.email || '');
+
   if (existing) {
-    if (existing.role === 'admin') redirect('/admin');
+    if (existing.role === 'admin' || isAdminEmail) redirect('/admin');
     const project = existing.project_id
       ? await prisma.project.findUnique({ where: { id: existing.project_id } })
       : await prisma.project.findFirst();
