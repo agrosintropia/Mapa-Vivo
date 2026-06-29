@@ -76,6 +76,8 @@ export default function VisitSession({
   const [addNotes, setAddNotes] = useState('');
   const [addPhoto, setAddPhoto] = useState<string | null>(null);
   const addPhotoRef = useRef<HTMLInputElement>(null);
+  const [addPlantedDate, setAddPlantedDate] = useState('');
+  const [addPlantedIndeterminado, setAddPlantedIndeterminado] = useState(false);
   const [addCount, setAddCount] = useState(0);
   const [lastAdded, setLastAdded] = useState('');
 
@@ -222,6 +224,7 @@ export default function VisitSession({
       height_m: addHeight ? parseFloat(addHeight) : null,
       status: addStatus,
       photo_url: addPhoto,
+      planted_date: addPlantedIndeterminado ? null : (addPlantedDate || null),
       notes: addNotes || null,
     });
     if (result) {
@@ -241,6 +244,7 @@ export default function VisitSession({
       // Reset form but keep GPS for continuous field work
       setAddSpeciesSearch(''); setAddSpeciesId(''); setAddDbh(''); setAddHeight('');
       setAddStatus('viva'); setAddNotes(''); setAddPhoto(null);
+      setAddPlantedDate(''); setAddPlantedIndeterminado(false);
 
       if (continueAdding) {
         useGPS(setAddLat, setAddLng);
@@ -603,6 +607,18 @@ export default function VisitSession({
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white cursor-pointer">
                   {STATUS_OPTS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                 </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Data de plantio</label>
+                <input type="date" value={addPlantedDate} onChange={e => setAddPlantedDate(e.target.value)}
+                  disabled={addPlantedIndeterminado}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-verde-medio/50 disabled:opacity-50" />
+                <label className="flex items-center gap-1.5 mt-1 cursor-pointer">
+                  <input type="checkbox" checked={addPlantedIndeterminado}
+                    onChange={e => { setAddPlantedIndeterminado(e.target.checked); if (e.target.checked) setAddPlantedDate(''); }}
+                    className="rounded" />
+                  <span className="text-xs text-gray-500">Indeterminado</span>
+                </label>
               </div>
             </div>
 
