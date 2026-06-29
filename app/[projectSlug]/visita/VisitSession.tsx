@@ -206,7 +206,12 @@ export default function VisitSession({
       if (!res.ok) throw new Error(data.error);
       return data;
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Erro');
+      const msg = e instanceof Error ? e.message : 'Erro';
+      if (msg === 'Load failed' || msg === 'Failed to fetch') {
+        setError('Falha na conexão. Verifique sua internet e tente novamente.');
+      } else {
+        setError(msg);
+      }
       return null;
     } finally {
       setLoading(false);
@@ -335,10 +340,18 @@ export default function VisitSession({
   };
 
   const useGPS = (setLat: (v: string) => void, setLng: (v: string) => void) => {
+    if (!navigator.geolocation) {
+      setError('Seu navegador não suporta GPS. Digite as coordenadas manualmente.');
+      return;
+    }
     navigator.geolocation.getCurrentPosition(
-      pos => { setLat(pos.coords.latitude.toFixed(6)); setLng(pos.coords.longitude.toFixed(6)); },
-      () => setError('GPS indisponível'),
-      { enableHighAccuracy: true, timeout: 10000 }
+      pos => { setLat(pos.coords.latitude.toFixed(6)); setLng(pos.coords.longitude.toFixed(6)); setError(''); },
+      (err) => {
+        if (err.code === 1) setError('Permissão de localização negada. Ative nas configurações do navegador.');
+        else if (err.code === 2) setError('GPS indisponível. Verifique se o GPS está ativado no dispositivo.');
+        else setError('Tempo esgotado ao buscar localização. Tente novamente ou digite manualmente.');
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 30000 }
     );
   };
 
