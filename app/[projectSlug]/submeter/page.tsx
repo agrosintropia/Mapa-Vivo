@@ -5,7 +5,6 @@ import { notFound } from 'next/navigation';
 import SubmissionForm from '@/components/SubmissionForm';
 import AppHeader from '@/components/AppHeader';
 import BottomNav from '@/components/BottomNav';
-import WhatsAppHelp from '@/components/WhatsAppHelp';
 
 export const dynamic = 'force-dynamic';
 
@@ -58,7 +57,6 @@ export default async function SubmeterPage({ params }: PageProps) {
           }))}
         />
         {session?.user && <BottomNav projectSlug={project.slug} userRole={userRole} />}
-        <WhatsAppHelp projectName={project.name} userName={session?.user?.name || undefined} />
       </main>
     );
   } catch {

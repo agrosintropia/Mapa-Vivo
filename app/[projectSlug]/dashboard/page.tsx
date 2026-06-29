@@ -5,7 +5,6 @@ import { notFound } from 'next/navigation';
 import Dashboard from '@/components/Dashboard';
 import AppHeader from '@/components/AppHeader';
 import BottomNav from '@/components/BottomNav';
-import WhatsAppHelp from '@/components/WhatsAppHelp';
 import type { ProjectData } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
@@ -225,8 +224,6 @@ export default async function DashboardPage({ params }: PageProps) {
   const { project, stats } = result;
   const session = await auth();
   const userRole = session?.user ? ((session.user as Record<string, unknown>).role as string) || 'morador' : 'morador';
-  const showHelp = userRole === 'morador' || userRole === 'gestor';
-
   return (
     <main className="min-h-screen bg-areia flex flex-col has-bottom-nav">
       <AppHeader
@@ -239,7 +236,6 @@ export default async function DashboardPage({ params }: PageProps) {
       />
       <Dashboard stats={stats} projectName={project.name} />
       {session?.user && <BottomNav projectSlug={projectSlug} userRole={userRole} />}
-      {showHelp && <WhatsAppHelp projectName={project.name} userName={session?.user?.name || undefined} />}
     </main>
   );
 }

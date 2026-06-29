@@ -5,7 +5,6 @@ import { notFound, redirect } from 'next/navigation';
 import PainelClient from '@/components/PainelClient';
 import AppHeader from '@/components/AppHeader';
 import BottomNav from '@/components/BottomNav';
-import WhatsAppHelp from '@/components/WhatsAppHelp';
 
 export const dynamic = 'force-dynamic';
 
@@ -163,9 +162,6 @@ export default async function PainelPage({ params }: PageProps) {
         />
         <PainelClient data={painelData} />
         <BottomNav projectSlug={project.slug} userRole={userRole} pendingObservations={pendingObservations} />
-        {userRole === 'gestor' && (
-          <WhatsAppHelp projectName={project.name} userName={session.user.name || undefined} />
-        )}
       </main>
     );
   } catch (error) {

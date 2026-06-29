@@ -5,7 +5,6 @@ import { notFound } from 'next/navigation';
 import MapView from '@/components/MapView';
 import AppHeader from '@/components/AppHeader';
 import BottomNav from '@/components/BottomNav';
-import WhatsAppHelp from '@/components/WhatsAppHelp';
 import type { TreeData, ProjectData } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
@@ -126,8 +125,6 @@ export default async function MapaPage({ params }: PageProps) {
   const { project, trees } = result;
   const session = await auth();
   const userRole = session?.user ? ((session.user as Record<string, unknown>).role as string) || 'morador' : 'morador';
-  const showHelp = userRole === 'morador' || userRole === 'gestor';
-
   return (
     <main className="min-h-screen bg-areia flex flex-col has-bottom-nav">
       <AppHeader
@@ -139,7 +136,6 @@ export default async function MapaPage({ params }: PageProps) {
       />
       <MapView project={project} trees={trees} projectSlug={projectSlug} />
       {session?.user && <BottomNav projectSlug={projectSlug} userRole={userRole} />}
-      {showHelp && <WhatsAppHelp projectName={project.name} userName={session?.user?.name || undefined} />}
     </main>
   );
 }

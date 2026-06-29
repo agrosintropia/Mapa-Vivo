@@ -36,18 +36,23 @@ const ICONS = {
       <circle cx="12" cy="12" r="3" />
     </svg>
   ),
-  arvore: (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 22V8" />
-      <path d="M5 12l7-10 7 10" />
-      <path d="M7 16l5-6 5 6" />
-    </svg>
-  ),
   visita: (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2" />
       <rect x="8" y="2" width="8" height="4" rx="1" />
       <path d="M9 14l2 2 4-4" />
+    </svg>
+  ),
+  ajuda: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" />
+      <line x1="12" y1="17" x2="12.01" y2="17" />
+    </svg>
+  ),
+  reportar: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
     </svg>
   ),
 };
@@ -57,24 +62,21 @@ export default function BottomNav({ projectSlug, userRole, pendingObservations }
 
   const items: { href: string; icon: React.ReactNode; label: string; badge?: number }[] = [];
 
-  items.push({ href: `/${projectSlug}/mapa`, icon: ICONS.mapa, label: 'Mapa' });
-  items.push({ href: `/${projectSlug}/dashboard`, icon: ICONS.dashboard, label: 'Dashboard' });
-
   if (userRole === 'morador') {
-    items.push({ href: `/${projectSlug}/submeter`, icon: ICONS.observacoes, label: 'Reportar' });
-  }
-
-  if (userRole === 'gestor' || userRole === 'tecnico') {
+    items.push({ href: `/${projectSlug}/mapa`, icon: ICONS.mapa, label: 'Mapa' });
+    items.push({ href: `/${projectSlug}/dashboard`, icon: ICONS.dashboard, label: 'Dashboard' });
+    items.push({ href: `/${projectSlug}/submeter`, icon: ICONS.reportar, label: 'Reportar' });
+    items.push({ href: `/${projectSlug}/ajuda`, icon: ICONS.ajuda, label: 'Ajuda' });
+  } else if (userRole === 'gestor') {
+    items.push({ href: `/${projectSlug}/dashboard`, icon: ICONS.dashboard, label: 'Dashboard' });
+    items.push({ href: `/${projectSlug}/mapa`, icon: ICONS.mapa, label: 'Mapa' });
+    items.push({ href: `/${projectSlug}/painel/observacoes`, icon: ICONS.observacoes, label: 'Revisões', badge: pendingObservations });
+    items.push({ href: `/${projectSlug}/ajuda`, icon: ICONS.ajuda, label: 'Ajuda' });
+  } else if (userRole === 'tecnico') {
+    items.push({ href: `/${projectSlug}/mapa`, icon: ICONS.mapa, label: 'Mapa' });
+    items.push({ href: `/${projectSlug}/dashboard`, icon: ICONS.dashboard, label: 'Dashboard' });
     items.push({ href: `/${projectSlug}/painel`, icon: ICONS.painel, label: 'Painel' });
-    items.push({
-      href: `/${projectSlug}/painel/observacoes`,
-      icon: ICONS.observacoes,
-      label: 'Revisões',
-      badge: pendingObservations,
-    });
-  }
-
-  if (userRole === 'tecnico') {
+    items.push({ href: `/${projectSlug}/painel/observacoes`, icon: ICONS.observacoes, label: 'Revisões', badge: pendingObservations });
     items.push({ href: `/${projectSlug}/visita`, icon: ICONS.visita, label: 'Visita' });
   }
 
