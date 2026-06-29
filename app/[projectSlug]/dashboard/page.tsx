@@ -235,6 +235,15 @@ export default async function DashboardPage({ params }: PageProps) {
         showBack
       />
       <Dashboard stats={stats} projectName={project.name} />
+      {userRole === 'gestor' && (
+        <a
+          href={`/${project.slug}/painel/arvores/nova`}
+          className="fixed bottom-20 right-4 z-40 w-14 h-14 bg-verde-medio text-white rounded-full shadow-lg flex items-center justify-center text-2xl hover:bg-verde-cerrado transition-colors md:bottom-6"
+          title="Cadastrar árvore"
+        >
+          +
+        </a>
+      )}
       {session?.user && <BottomNav projectSlug={projectSlug} userRole={userRole} />}
     </main>
   );

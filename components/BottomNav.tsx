@@ -70,6 +70,7 @@ export default function BottomNav({ projectSlug, userRole, pendingObservations }
   } else if (userRole === 'gestor') {
     items.push({ href: `/${projectSlug}/dashboard`, icon: ICONS.dashboard, label: 'Dashboard' });
     items.push({ href: `/${projectSlug}/mapa`, icon: ICONS.mapa, label: 'Mapa' });
+    items.push({ href: `/${projectSlug}/painel`, icon: ICONS.painel, label: 'Painel' });
     items.push({ href: `/${projectSlug}/painel/observacoes`, icon: ICONS.observacoes, label: 'Revisões', badge: pendingObservations });
     items.push({ href: `/${projectSlug}/ajuda`, icon: ICONS.ajuda, label: 'Ajuda' });
   } else if (userRole === 'tecnico') {
