@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import AdminDashboard from './AdminDashboard';
+import { LogoIconDark } from '@/components/Logo';
 
 export const dynamic = 'force-dynamic';
 
@@ -152,15 +153,12 @@ export default async function AdminPage() {
     <main className="min-h-screen bg-gray-50 flex flex-col">
       <header className="bg-verde-cerrado text-white px-4 py-3 flex items-center justify-between shadow-md z-50 sticky top-0">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <path d="M12 2C8 2 4 5 4 10c0 3 2 6 4 8l4 4 4-4c2-2 4-5 4-8 0-5-4-8-8-8z" fill="#4A7C2F" stroke="#4A7C2F" />
-              <circle cx="12" cy="10" r="3" fill="white" />
-            </svg>
+          <div className="w-8 h-8">
+            <LogoIconDark />
           </div>
           <div>
-            <h1 className="font-display text-base font-bold leading-tight">AgroSintropia</h1>
-            <p className="text-[10px] opacity-60">Painel Administrativo</p>
+            <h1 className="font-display text-base font-bold leading-tight">Mapa Vivo</h1>
+            <p className="text-[10px] opacity-60">Painel Administrativo · AgroSintropia</p>
           </div>
         </div>
         <nav className="flex items-center gap-3 text-sm">

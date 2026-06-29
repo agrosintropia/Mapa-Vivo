@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import Link from 'next/link';
+import { LogoIconDark } from '@/components/Logo';
 
 export const dynamic = 'force-dynamic';
 
@@ -137,11 +138,16 @@ export default async function Home() {
       {/* Hero */}
       <section className="bg-verde-cerrado text-white relative">
         <div className="max-w-5xl mx-auto px-4 py-16 md:py-24 text-center">
-          <span className="text-6xl block mb-6">🌳</span>
+          <div className="w-20 h-20 mx-auto mb-6">
+            <LogoIconDark />
+          </div>
           <h1 className="font-display text-4xl md:text-6xl font-bold tracking-tight mb-4">
             Mapa Vivo
           </h1>
-          <p className="text-lg md:text-xl text-ocre font-medium mb-2">
+          <p className="text-sm md:text-base text-verde-medio font-medium tracking-widest uppercase mb-2">
+            Inteligência Urbana Verde
+          </p>
+          <p className="text-lg md:text-xl text-ocre font-medium">
             por Agrosintropia
           </p>
           <p className="text-base md:text-lg opacity-80 max-w-2xl mx-auto mt-6 leading-relaxed">
@@ -242,9 +248,9 @@ export default async function Home() {
       <footer className="bg-verde-cerrado text-white py-8 px-4 mt-auto">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <span className="text-xl">🌳</span>
+            <div className="w-6 h-6"><LogoIconDark /></div>
             <span className="font-display font-bold">Mapa Vivo</span>
-            <span className="text-xs opacity-60 ml-1">por Agrosintropia</span>
+            <span className="text-[9px] opacity-50 ml-1 tracking-widest uppercase">Inteligência Urbana Verde</span>
           </div>
           <nav className="flex gap-6 text-sm opacity-80">
             {projects.length > 0 && (

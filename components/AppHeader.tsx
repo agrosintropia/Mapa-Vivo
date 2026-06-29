@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { LogoIconDark } from './Logo';
 
 interface AppHeaderProps {
   projectName?: string;
@@ -42,11 +43,8 @@ export default function AppHeader({
           </Link>
         )}
         <Link href={projectSlug ? `/${projectSlug}/mapa` : '/'} className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <path d="M12 2C8 2 4 5 4 10c0 3 2 6 4 8l4 4 4-4c2-2 4-5 4-8 0-5-4-8-8-8z" fill="#4A7C2F" stroke="#4A7C2F" />
-              <circle cx="12" cy="10" r="3" fill="white" />
-            </svg>
+          <div className="w-8 h-8">
+            <LogoIconDark />
           </div>
           <div className="min-w-0">
             <h1 className="font-display text-base font-bold leading-tight truncate max-w-[200px]">
