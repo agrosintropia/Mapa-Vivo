@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, FormEvent, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, FormEvent } from 'react';
 
 interface SpeciesOption {
   id: string;
@@ -53,15 +53,16 @@ export default function TreeForm({ projectSlug, species, userRole, editData }: P
   const [status, setStatus] = useState(editData?.status ?? 'viva');
   const [plantedDate, setPlantedDate] = useState(editData?.planted_date ?? '');
   const [notes, setNotes] = useState('');
-  const [photo, setPhoto] = useState<File | null>(null);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [photoUrl, setPhotoUrl] = useState('');
+  const [photoUrl2, setPhotoUrl2] = useState('');
+  const [photoUrl3, setPhotoUrl3] = useState('');
+  const [plantedIndeterminado, setPlantedIndeterminado] = useState(!editData?.planted_date && isEdit);
   const [formStatus, setFormStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
   const [createdSlug, setCreatedSlug] = useState('');
   const [gpsActive, setGpsActive] = useState(false);
   const [gpsAccuracy, setGpsAccuracy] = useState<number | null>(null);
   const [treeCount, setTreeCount] = useState(0);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const selectedSpecies = useMemo(
@@ -110,13 +111,6 @@ export default function TreeForm({ projectSlug, species, userRole, editData }: P
     );
   }
 
-  function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setPhoto(file);
-    setPhotoPreview(URL.createObjectURL(file));
-  }
-
   function selectSpecies(s: SpeciesOption) {
     setSpeciesId(s.id);
     setSpeciesSearch('');
@@ -128,15 +122,6 @@ export default function TreeForm({ projectSlug, species, userRole, editData }: P
     setFormStatus('loading');
     setErrorMsg('');
 
-    let photoUrl: string | null = null;
-    if (photo) {
-      const reader = new FileReader();
-      photoUrl = await new Promise((resolve) => {
-        reader.onload = () => resolve(reader.result as string);
-        reader.readAsDataURL(photo);
-      });
-    }
-
     const body = {
       species_id: speciesId,
       lat: parseFloat(lat),
@@ -144,9 +129,11 @@ export default function TreeForm({ projectSlug, species, userRole, editData }: P
       dbh_cm: dbhCm ? parseFloat(dbhCm) : null,
       height_m: heightM ? parseFloat(heightM) : null,
       status,
-      planted_date: plantedDate || null,
+      planted_date: plantedIndeterminado ? null : (plantedDate || null),
       reliability: userRole === 'tecnico' ? 'validado_tecnico' : 'declarado_gestor',
-      photo_url: photoUrl,
+      photo_url: photoUrl.trim() || null,
+      photo_url_2: photoUrl2.trim() || null,
+      photo_url_3: photoUrl3.trim() || null,
       notes: notes || null,
     };
 
@@ -185,8 +172,10 @@ export default function TreeForm({ projectSlug, species, userRole, editData }: P
     setHeightM('');
     setPlantedDate('');
     setNotes('');
-    setPhoto(null);
-    setPhotoPreview(null);
+    setPhotoUrl('');
+    setPhotoUrl2('');
+    setPhotoUrl3('');
+    setPlantedIndeterminado(false);
     setCreatedSlug('');
     setErrorMsg('');
     // Keep lat/lng — the technician is likely still in the same area
@@ -303,38 +292,23 @@ export default function TreeForm({ projectSlug, species, userRole, editData }: P
             )}
           </div>
 
-          {/* Photo */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Foto da árvore</label>
-            {photoPreview ? (
-              <div className="relative inline-block">
-                <img src={photoPreview} alt="Foto" className="w-32 h-32 object-cover rounded-lg" />
-                <button
-                  type="button"
-                  onClick={() => { setPhoto(null); setPhotoPreview(null); }}
-                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 text-xs flex items-center justify-center cursor-pointer"
-                >
-                  ✕
-                </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="w-full py-8 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center gap-2 text-gray-400 hover:border-verde-medio hover:text-verde-medio transition-colors cursor-pointer"
-              >
-                <span className="text-3xl">📷</span>
-                <span className="text-sm">Tirar foto ou escolher do álbum</span>
-              </button>
-            )}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              onChange={handlePhotoChange}
-              className="hidden"
-            />
+          {/* Photos (URLs) */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">Fotos da árvore (URLs)</label>
+            {[
+              { value: photoUrl, setter: setPhotoUrl, label: 'Foto 1' },
+              { value: photoUrl2, setter: setPhotoUrl2, label: 'Foto 2' },
+              { value: photoUrl3, setter: setPhotoUrl3, label: 'Foto 3' },
+            ].map((f) => (
+              <input
+                key={f.label}
+                type="url"
+                value={f.value}
+                onChange={(e) => f.setter(e.target.value)}
+                placeholder={`${f.label} — cole a URL da imagem`}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-verde-medio/50"
+              />
+            ))}
           </div>
 
           {/* Location */}
@@ -430,8 +404,18 @@ export default function TreeForm({ projectSlug, species, userRole, editData }: P
                 type="date"
                 value={plantedDate}
                 onChange={(e) => setPlantedDate(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-verde-medio/50"
+                disabled={plantedIndeterminado}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-verde-medio/50 disabled:opacity-50"
               />
+              <label className="flex items-center gap-1.5 mt-1 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={plantedIndeterminado}
+                  onChange={(e) => { setPlantedIndeterminado(e.target.checked); if (e.target.checked) setPlantedDate(''); }}
+                  className="rounded"
+                />
+                <span className="text-xs text-gray-500">Indeterminado</span>
+              </label>
             </div>
           </div>
 
