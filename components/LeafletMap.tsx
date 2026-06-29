@@ -85,9 +85,10 @@ function FitBounds({ bounds }: { bounds: L.LatLngBoundsExpression }) {
 
 interface LeafletMapProps extends Props {
   onObserve?: (tree: TreeData) => void;
+  readOnly?: boolean;
 }
 
-export default function LeafletMap({ project, allTrees, filteredTrees, speciesColorMap, onObserve }: LeafletMapProps) {
+export default function LeafletMap({ project, allTrees, filteredTrees, speciesColorMap, onObserve, readOnly }: LeafletMapProps) {
   const center = useMemo(
     () => computeCenter(project, allTrees),
     [project, allTrees]
@@ -217,23 +218,43 @@ export default function LeafletMap({ project, allTrees, filteredTrees, speciesCo
                     <a
                       href={`/arvore/${tree.qr_slug}`}
                       className="text-verde-medio font-semibold text-sm hover:underline"
+                      {...(readOnly ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                     >
                       Ver ficha →
                     </a>
-                    <button
-                      onClick={() => startNavigation(tree)}
-                      disabled={locating}
-                      className="text-left text-blue-600 font-medium text-sm hover:underline cursor-pointer disabled:opacity-50"
-                    >
-                      {locating ? 'Localizando...' : '📍 Como chegar'}
-                    </button>
-                    {onObserve && (
-                      <button
-                        onClick={() => onObserve(tree)}
-                        className="text-left text-terracota font-medium text-sm hover:underline cursor-pointer"
-                      >
-                        📝 Relatar observação
-                      </button>
+                    {readOnly ? (
+                      <>
+                        <button
+                          onClick={() => alert('Função disponível apenas no aplicativo')}
+                          className="text-left text-blue-600/50 font-medium text-sm cursor-pointer"
+                        >
+                          📍 Como chegar
+                        </button>
+                        <button
+                          onClick={() => alert('Função disponível apenas no aplicativo')}
+                          className="text-left text-terracota/50 font-medium text-sm cursor-pointer"
+                        >
+                          📝 Relatar observação
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => startNavigation(tree)}
+                          disabled={locating}
+                          className="text-left text-blue-600 font-medium text-sm hover:underline cursor-pointer disabled:opacity-50"
+                        >
+                          {locating ? 'Localizando...' : '📍 Como chegar'}
+                        </button>
+                        {onObserve && (
+                          <button
+                            onClick={() => onObserve(tree)}
+                            className="text-left text-terracota font-medium text-sm hover:underline cursor-pointer"
+                          >
+                            📝 Relatar observação
+                          </button>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>
