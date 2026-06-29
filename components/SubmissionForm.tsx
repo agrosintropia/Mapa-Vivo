@@ -24,7 +24,10 @@ export default function SubmissionForm({ projectSlug, species }: Props) {
   const [geoLoading, setGeoLoading] = useState(false);
 
   function useCurrentLocation() {
-    if (!navigator.geolocation) return;
+    if (!navigator.geolocation) {
+      alert('Seu navegador não suporta geolocalização.');
+      return;
+    }
     setGeoLoading(true);
     navigator.geolocation.getCurrentPosition(
       pos => {
@@ -32,8 +35,17 @@ export default function SubmissionForm({ projectSlug, species }: Props) {
         setLng(pos.coords.longitude.toFixed(6));
         setGeoLoading(false);
       },
-      () => setGeoLoading(false),
-      { enableHighAccuracy: true },
+      (err) => {
+        setGeoLoading(false);
+        if (err.code === 1) {
+          alert('Permissão de localização negada. Ative a permissão nas configurações do navegador.');
+        } else if (err.code === 2) {
+          alert('Não foi possível obter a localização. Verifique se o GPS está ativado.');
+        } else {
+          alert('Tempo esgotado ao obter localização. Tente novamente.');
+        }
+      },
+      { enableHighAccuracy: true, timeout: 15000 },
     );
   }
 

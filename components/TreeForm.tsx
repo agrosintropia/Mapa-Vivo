@@ -53,9 +53,7 @@ export default function TreeForm({ projectSlug, species, userRole, editData }: P
   const [status, setStatus] = useState(editData?.status ?? 'viva');
   const [plantedDate, setPlantedDate] = useState(editData?.planted_date ?? '');
   const [notes, setNotes] = useState('');
-  const [photoUrl, setPhotoUrl] = useState('');
-  const [photoUrl2, setPhotoUrl2] = useState('');
-  const [photoUrl3, setPhotoUrl3] = useState('');
+  const [photos, setPhotos] = useState<(string | null)[]>([null, null, null]);
   const [plantedIndeterminado, setPlantedIndeterminado] = useState(!editData?.planted_date && isEdit);
   const [formStatus, setFormStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
@@ -64,6 +62,8 @@ export default function TreeForm({ projectSlug, species, userRole, editData }: P
   const [gpsAccuracy, setGpsAccuracy] = useState<number | null>(null);
   const [treeCount, setTreeCount] = useState(0);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRefs = [useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null)];
+  const [activePhotoSlot, setActivePhotoSlot] = useState(0);
 
   const selectedSpecies = useMemo(
     () => species.find((s) => s.id === speciesId),
@@ -117,6 +117,36 @@ export default function TreeForm({ projectSlug, species, userRole, editData }: P
     setShowSpeciesDropdown(false);
   }
 
+  function handlePhotoCapture(e: React.ChangeEvent<HTMLInputElement>, slot: number) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setPhotos(prev => {
+        const next = [...prev];
+        next[slot] = reader.result as string;
+        return next;
+      });
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function handlePhotoUrlPaste(url: string, slot: number) {
+    setPhotos(prev => {
+      const next = [...prev];
+      next[slot] = url.trim() || null;
+      return next;
+    });
+  }
+
+  function removePhoto(slot: number) {
+    setPhotos(prev => {
+      const next = [...prev];
+      next[slot] = null;
+      return next;
+    });
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setFormStatus('loading');
@@ -131,9 +161,9 @@ export default function TreeForm({ projectSlug, species, userRole, editData }: P
       status,
       planted_date: plantedIndeterminado ? null : (plantedDate || null),
       reliability: userRole === 'tecnico' ? 'validado_tecnico' : 'declarado_gestor',
-      photo_url: photoUrl.trim() || null,
-      photo_url_2: photoUrl2.trim() || null,
-      photo_url_3: photoUrl3.trim() || null,
+      photo_url: photos[0] || null,
+      photo_url_2: photos[1] || null,
+      photo_url_3: photos[2] || null,
       notes: notes || null,
     };
 
@@ -172,9 +202,7 @@ export default function TreeForm({ projectSlug, species, userRole, editData }: P
     setHeightM('');
     setPlantedDate('');
     setNotes('');
-    setPhotoUrl('');
-    setPhotoUrl2('');
-    setPhotoUrl3('');
+    setPhotos([null, null, null]);
     setPlantedIndeterminado(false);
     setCreatedSlug('');
     setErrorMsg('');
@@ -292,23 +320,67 @@ export default function TreeForm({ projectSlug, species, userRole, editData }: P
             )}
           </div>
 
-          {/* Photos (URLs) */}
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">Fotos da árvore (URLs)</label>
-            {[
-              { value: photoUrl, setter: setPhotoUrl, label: 'Foto 1' },
-              { value: photoUrl2, setter: setPhotoUrl2, label: 'Foto 2' },
-              { value: photoUrl3, setter: setPhotoUrl3, label: 'Foto 3' },
-            ].map((f) => (
+          {/* Photos */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Fotos da árvore (até 3)</label>
+            <div className="grid grid-cols-3 gap-2">
+              {[0, 1, 2].map((slot) => (
+                <div key={slot}>
+                  {photos[slot] ? (
+                    <div className="relative">
+                      <img
+                        src={photos[slot]!}
+                        alt={`Foto ${slot + 1}`}
+                        className="w-full h-24 object-cover rounded-lg"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removePhoto(slot)}
+                        className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center cursor-pointer"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => { setActivePhotoSlot(slot); fileInputRefs[slot].current?.click(); }}
+                      className="w-full h-24 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center gap-1 text-gray-400 hover:border-verde-medio hover:text-verde-medio transition-colors cursor-pointer"
+                    >
+                      <span className="text-xl">📷</span>
+                      <span className="text-[10px]">Foto {slot + 1}</span>
+                    </button>
+                  )}
+                  <input
+                    ref={fileInputRefs[slot]}
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    onChange={(e) => handlePhotoCapture(e, slot)}
+                    className="hidden"
+                  />
+                </div>
+              ))}
+            </div>
+            <div className="mt-2">
               <input
-                key={f.label}
                 type="url"
-                value={f.value}
-                onChange={(e) => f.setter(e.target.value)}
-                placeholder={`${f.label} — cole a URL da imagem`}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-verde-medio/50"
+                placeholder="Ou cole uma URL de imagem..."
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const val = (e.target as HTMLInputElement).value;
+                    const emptySlot = photos.findIndex(p => !p);
+                    if (emptySlot >= 0 && val.trim()) {
+                      handlePhotoUrlPaste(val, emptySlot);
+                      (e.target as HTMLInputElement).value = '';
+                    }
+                  }
+                }}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-verde-medio/50"
               />
-            ))}
+            </div>
           </div>
 
           {/* Location */}

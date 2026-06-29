@@ -52,9 +52,14 @@ export default async function ProjetosPage() {
       <div className="flex-1 p-4 md:p-8 max-w-4xl mx-auto w-full space-y-6">
         <div className="flex items-center justify-between">
           <h2 className="font-display text-2xl font-bold text-verde-cerrado">Projetos</h2>
-          <Link href="/projetos/novo" className="btn-primary text-sm">
-            + Criar novo projeto
-          </Link>
+          <div className="flex gap-2">
+            <Link href="/projetos/solicitacoes" className="btn-secondary text-sm">
+              Solicitações
+            </Link>
+            <Link href="/projetos/novo" className="btn-primary text-sm">
+              + Criar novo projeto
+            </Link>
+          </div>
         </div>
 
         {projects.length === 0 ? (
