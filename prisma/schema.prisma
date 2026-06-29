@@ -50,6 +50,7 @@ model Project {
   sub_areas     SubArea[]
   visits        TechnicalVisit[]
   members       ProjectMember[]
+  authorized_residents AuthorizedResident[]
   review_requests ReviewRequest[]
   service_requests ServiceRequest[]
 }
@@ -63,6 +64,19 @@ model ProjectMember {
   project    Project  @relation(fields: [project_id], references: [id], onDelete: Cascade)
 
   @@unique([project_id, user_id])
+}
+
+model AuthorizedResident {
+  id         String   @id @default(uuid())
+  project_id String
+  name       String
+  email      String
+  phone      String?
+  status     String   @default("pendente") // pendente|ativo|bloqueado
+  created_at DateTime @default(now())
+  project    Project  @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@unique([project_id, email])
 }
 
 model ReviewRequest {

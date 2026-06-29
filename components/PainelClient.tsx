@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import type { PainelData } from '@/app/[projectSlug]/painel/page';
 
-type Tab = 'arvores' | 'submissoes';
+type Tab = 'arvores' | 'submissoes' | 'moradores';
 
 const STATUS_LABELS: Record<string, string> = {
   viva: 'Viva',
@@ -56,11 +56,60 @@ const SERVICES = [
   { id: 'curso', icon: '📚', label: 'Curso Presencial de Agrofloresta', description: 'Capacitação prática em sistemas agroflorestais' },
 ];
 
+interface Resident {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  status: string;
+  created_at: string;
+}
+
 export default function PainelClient({ data }: { data: PainelData }) {
   const [tab, setTab] = useState<Tab>('arvores');
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [reliabilityFilter, setReliabilityFilter] = useState<string>('');
+  const [residents, setResidents] = useState<Resident[]>([]);
+  const [residentsLoaded, setResidentsLoaded] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [newEmail, setNewEmail] = useState('');
+  const [newPhone, setNewPhone] = useState('');
+  const [addingResident, setAddingResident] = useState(false);
+
+  async function loadResidents() {
+    if (residentsLoaded) return;
+    const res = await fetch(`/api/projects/${data.projectSlug}/residents`);
+    if (res.ok) setResidents(await res.json());
+    setResidentsLoaded(true);
+  }
+
+  async function addResident() {
+    if (!newName.trim() || !newEmail.trim()) return;
+    setAddingResident(true);
+    const res = await fetch(`/api/projects/${data.projectSlug}/residents`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: newName, email: newEmail, phone: newPhone }),
+    });
+    if (res.ok) {
+      const r = await res.json();
+      setResidents(prev => [r, ...prev]);
+      setNewName('');
+      setNewEmail('');
+      setNewPhone('');
+    } else {
+      const err = await res.json();
+      alert(err.error || 'Erro ao cadastrar');
+    }
+    setAddingResident(false);
+  }
+
+  async function removeResident(id: string) {
+    if (!confirm('Remover este morador?')) return;
+    const res = await fetch(`/api/projects/${data.projectSlug}/residents?id=${id}`, { method: 'DELETE' });
+    if (res.ok) setResidents(prev => prev.filter(r => r.id !== id));
+  }
 
   const filteredTrees = data.trees.filter(tree => {
     if (statusFilter && tree.status !== statusFilter) return false;
@@ -116,7 +165,7 @@ export default function PainelClient({ data }: { data: PainelData }) {
               Copiar
             </button>
           </div>
-          <p className="text-xs text-gray-400 mt-1">Compartilhe este link com os moradores do condomínio.</p>
+          <p className="text-xs text-gray-400 mt-1">Envie este link aos moradores. Apenas emails cadastrados na aba "Moradores" terão acesso.</p>
         </div>
       )}
 
@@ -242,6 +291,18 @@ export default function PainelClient({ data }: { data: PainelData }) {
             </span>
           )}
         </button>
+        {data.userRole === 'gestor' && (
+          <button
+            onClick={() => { setTab('moradores'); loadResidents(); }}
+            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors cursor-pointer ${
+              tab === 'moradores'
+                ? 'bg-verde-cerrado text-white'
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            Moradores
+          </button>
+        )}
       </div>
 
       {/* Trees tab */}
@@ -342,6 +403,82 @@ export default function PainelClient({ data }: { data: PainelData }) {
           {filteredTrees.length === 0 && (
             <p className="text-center text-gray-400 py-8">Nenhuma árvore encontrada.</p>
           )}
+        </div>
+      )}
+
+      {/* Moradores tab */}
+      {tab === 'moradores' && (
+        <div className="space-y-4">
+          <div className="card">
+            <h3 className="font-display text-lg font-bold text-verde-cerrado mb-4">Cadastrar morador</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <input
+                type="text"
+                placeholder="Nome *"
+                value={newName}
+                onChange={e => setNewName(e.target.value)}
+                className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-verde-medio/50"
+              />
+              <input
+                type="email"
+                placeholder="Email *"
+                value={newEmail}
+                onChange={e => setNewEmail(e.target.value)}
+                className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-verde-medio/50"
+              />
+              <input
+                type="tel"
+                placeholder="Telefone"
+                value={newPhone}
+                onChange={e => setNewPhone(e.target.value)}
+                className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-verde-medio/50"
+              />
+            </div>
+            <button
+              onClick={addResident}
+              disabled={addingResident || !newName.trim() || !newEmail.trim()}
+              className="btn-primary text-sm mt-3 disabled:opacity-50 cursor-pointer"
+            >
+              {addingResident ? 'Cadastrando...' : '+ Cadastrar morador'}
+            </button>
+            <p className="text-xs text-gray-400 mt-2">
+              Apenas moradores cadastrados aqui poderão acessar o projeto pelo link de convite.
+            </p>
+          </div>
+
+          <div className="card">
+            <h3 className="font-display text-lg font-bold text-verde-cerrado mb-4">
+              Moradores cadastrados ({residents.length})
+            </h3>
+            {residents.length === 0 ? (
+              <p className="text-center text-gray-400 py-8">Nenhum morador cadastrado ainda.</p>
+            ) : (
+              <div className="space-y-2">
+                {residents.map(r => (
+                  <div key={r.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-gray-700 truncate">{r.name}</p>
+                      <p className="text-xs text-gray-400 truncate">{r.email}{r.phone ? ` · ${r.phone}` : ''}</p>
+                    </div>
+                    <div className="flex items-center gap-2 ml-2">
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                        r.status === 'ativo' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                      }`}>
+                        {r.status === 'ativo' ? 'Ativo' : 'Pendente'}
+                      </span>
+                      <button
+                        onClick={() => removeResident(r.id)}
+                        className="text-gray-400 hover:text-red-500 text-sm cursor-pointer"
+                        title="Remover"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
 

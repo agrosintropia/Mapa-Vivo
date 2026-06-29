@@ -34,6 +34,21 @@ export async function POST(request: NextRequest) {
 
   const isGestor = project.gestor_email && session.user.email === project.gestor_email;
 
+  if (!isGestor && session.user.email) {
+    const authorized = await prisma.authorizedResident.findUnique({
+      where: { project_id_email: { project_id: project.id, email: session.user.email.toLowerCase() } },
+    });
+    if (!authorized) {
+      return NextResponse.json({
+        error: 'Seu email não está autorizado neste projeto. Entre em contato com o gestor do condomínio.',
+      }, { status: 403 });
+    }
+    await prisma.authorizedResident.update({
+      where: { id: authorized.id },
+      data: { status: 'ativo' },
+    });
+  }
+
   await prisma.projectMember.create({
     data: {
       project_id: project.id,
@@ -41,6 +56,14 @@ export async function POST(request: NextRequest) {
       role: isGestor ? 'gestor' : 'morador',
     },
   });
+
+  if (!isGestor) {
+    await prisma.profile.upsert({
+      where: { id: session.user.id },
+      update: { role: 'morador', project_id: project.id },
+      create: { id: session.user.id, name: session.user.name || '', role: 'morador', project_id: project.id },
+    });
+  }
 
   if (isGestor) {
     await prisma.profile.upsert({
