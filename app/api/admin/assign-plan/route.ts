@@ -19,9 +19,11 @@ export async function PUT(request: Request) {
 
   const { projectId, planId } = await request.json();
 
+  const expiresAt = planId ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) : null;
+
   await prisma.project.update({
     where: { id: projectId },
-    data: { plan_id: planId || null },
+    data: { plan_id: planId || null, plan_expires_at: expiresAt },
   });
 
   return NextResponse.json({ ok: true });

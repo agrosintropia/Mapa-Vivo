@@ -17,6 +17,7 @@ interface ProjectRow {
   setupInstallments: number | null;
   setupPayment: string | null;
   setupPaid: boolean;
+  planExpiresAt: string | null;
   createdAt: string;
   treeCount: number;
   memberCount: number;
@@ -40,6 +41,7 @@ interface TechnicianRow {
   name: string;
   email: string;
   image: string | null;
+  visitCount: number;
 }
 
 interface ReviewRow {
@@ -72,6 +74,20 @@ interface VisitRow {
   actionCount: number;
 }
 
+interface ServiceRequestRow {
+  id: string;
+  projectName: string;
+  projectSlug: string;
+  gestorEmail: string;
+  requestedBy: string;
+  type: string;
+  description: string;
+  status: string;
+  assignedTechnicianId: string | null;
+  adminNote: string | null;
+  createdAt: string;
+}
+
 interface Metrics {
   totalProjects: number;
   activeProjects: number;
@@ -87,6 +103,7 @@ interface Metrics {
   visitsPending: number;
   reviewRevenue: number;
   reviewsPending: number;
+  openServiceRequests: number;
 }
 
 interface Props {
@@ -96,11 +113,12 @@ interface Props {
     technicians: TechnicianRow[];
     reviewRequests: ReviewRow[];
     recentVisits: VisitRow[];
+    serviceRequests: ServiceRequestRow[];
     metrics: Metrics;
   };
 }
 
-type Tab = 'overview' | 'projects' | 'plans' | 'technicians' | 'reviews' | 'visits';
+type Tab = 'overview' | 'projects' | 'plans' | 'technicians' | 'reviews' | 'visits' | 'requests';
 
 const TYPE_LABELS: Record<string, string> = {
   condominio: 'Condomínio',
@@ -122,9 +140,29 @@ const REVIEW_STATUS_COLORS: Record<string, string> = {
   resolvido: 'bg-verde-medio/10 text-verde-medio',
 };
 
+const REQUEST_TYPE_LABELS: Record<string, string> = {
+  visita_tecnica: 'Visita Técnica',
+  revisao_online: 'Revisão Online',
+  nova_area: 'Nova Área',
+  outro: 'Outro',
+};
+
+const REQUEST_STATUS_COLORS: Record<string, string> = {
+  pendente: 'bg-ocre/10 text-ocre',
+  atribuido: 'bg-blue-50 text-blue-600',
+  em_andamento: 'bg-blue-50 text-blue-600',
+  concluido: 'bg-verde-medio/10 text-verde-medio',
+  recusado: 'bg-gray-100 text-gray-500',
+};
+
+const BRL = (v: number) => v.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+
 export default function AdminDashboard({ data }: Props) {
   const [tab, setTab] = useState<Tab>('overview');
   const [updatingPlan, setUpdatingPlan] = useState<string | null>(null);
+  const [editingProject, setEditingProject] = useState<string | null>(null);
+  const [techEmail, setTechEmail] = useState('');
+  const [techLoading, setTechLoading] = useState(false);
 
   async function handleAssignPlan(projectId: string, planId: string) {
     setUpdatingPlan(projectId);
@@ -154,6 +192,19 @@ export default function AdminDashboard({ data }: Props) {
     }
   }
 
+  async function handleEditProject(projectId: string, field: string, value: string) {
+    try {
+      await fetch('/api/admin/edit-project', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ projectId, [field]: value }),
+      });
+      window.location.reload();
+    } catch {
+      alert('Erro ao editar projeto');
+    }
+  }
+
   async function handleResolveReview(reviewId: string, response: string) {
     try {
       await fetch('/api/admin/resolve-review', {
@@ -167,13 +218,52 @@ export default function AdminDashboard({ data }: Props) {
     }
   }
 
+  async function handleRegisterTechnician() {
+    if (!techEmail.trim()) return;
+    setTechLoading(true);
+    try {
+      const res = await fetch('/api/admin/register-technician', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: techEmail.trim() }),
+      });
+      if (!res.ok) {
+        const d = await res.json();
+        alert(d.error || 'Erro ao cadastrar');
+      } else {
+        setTechEmail('');
+        window.location.reload();
+      }
+    } catch {
+      alert('Erro de conexão');
+    }
+    setTechLoading(false);
+  }
+
+  async function handleAssignTechnician(requestId: string, technicianId: string) {
+    try {
+      await fetch('/api/admin/service-requests', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requestId, assignedTechnicianId: technicianId, status: 'atribuido' }),
+      });
+      window.location.reload();
+    } catch {
+      alert('Erro ao atribuir técnico');
+    }
+  }
+
+  const m = data.metrics;
+  const unpaidVisits = data.recentVisits.filter(v => v.totalBilled && !v.billingPaid).length;
+
   const tabs: { id: Tab; label: string; badge?: number }[] = [
     { id: 'overview', label: 'Visão Geral' },
     { id: 'projects', label: 'Projetos' },
     { id: 'plans', label: 'Planos' },
     { id: 'technicians', label: 'Técnicos' },
-    { id: 'reviews', label: 'Revisões', badge: data.metrics.openReviews },
-    { id: 'visits', label: 'Visitas' },
+    { id: 'reviews', label: 'Revisões', badge: m.openReviews },
+    { id: 'visits', label: 'Visitas', badge: unpaidVisits || undefined },
+    { id: 'requests', label: 'Solicitações', badge: m.openServiceRequests || undefined },
   ];
 
   return (
@@ -192,8 +282,8 @@ export default function AdminDashboard({ data }: Props) {
           >
             {t.label}
             {t.badge && t.badge > 0 && (
-              <span className={`ml-1.5 text-xs rounded-full px-1.5 py-0.5 ${
-                tab === t.id ? 'bg-white/20' : 'bg-terracota text-white'
+              <span className={`ml-1.5 text-xs rounded-full px-1.5 py-0.5 font-bold ${
+                tab === t.id ? 'bg-white/20' : 'bg-red-500 text-white'
               }`}>{t.badge}</span>
             )}
           </button>
@@ -203,24 +293,38 @@ export default function AdminDashboard({ data }: Props) {
       {/* Overview */}
       {tab === 'overview' && (
         <div className="space-y-6">
-          {/* Metrics grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <MetricCard label="Projetos ativos" value={data.metrics.activeProjects} icon="🏢" />
-            <MetricCard label="Total de árvores" value={data.metrics.totalTrees} icon="🌳" />
-            <MetricCard label="Espécies cadastradas" value={data.metrics.totalSpecies} icon="🌿" />
-            <MetricCard label="Observações" value={data.metrics.totalObservations} icon="📝" />
-            <MetricCard label="Técnicos" value={data.metrics.totalTechnicians} icon="🔬" />
-            <MetricCard label="Revisões abertas" value={data.metrics.openReviews} icon="📋" highlight={data.metrics.openReviews > 0} />
-            <MetricCard label="Receita mensal" value={`R$ ${data.metrics.monthlyRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`} icon="💰" />
-            <MetricCard label="Visitas técnicas" value={`R$ ${data.metrics.visitRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`} icon="🚗" highlight={data.metrics.visitsPending > 0} />
-            <MetricCard label="Revisões online" value={`R$ ${data.metrics.reviewRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`} icon="🔍" highlight={data.metrics.reviewsPending > 0} />
-            <MetricCard label="Setup fees" value={`R$ ${data.metrics.totalSetupFees.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`} icon="🏷️" highlight={data.metrics.setupPending > 0} />
+            <MetricCard label="Projetos ativos" value={m.activeProjects} onClick={() => setTab('projects')} />
+            <MetricCard label="Total de árvores" value={m.totalTrees} />
+            <MetricCard label="Espécies" value={m.totalSpecies} />
+            <MetricCard label="Observações" value={m.totalObservations} />
+            <MetricCard label="Técnicos" value={m.totalTechnicians} onClick={() => setTab('technicians')} />
+            <MetricCard label="Revisões abertas" value={m.openReviews} highlight={m.openReviews > 0} onClick={() => setTab('reviews')} />
+            <MetricCard label="Solicitações" value={m.openServiceRequests} highlight={m.openServiceRequests > 0} onClick={() => setTab('requests')} />
+            <MetricCard label="Receita mensal" value={`R$ ${BRL(m.monthlyRevenue)}`} />
           </div>
 
-          {/* Quick actions */}
-          {data.metrics.openReviews > 0 && (
+          {m.openServiceRequests > 0 && (
+            <div className="bg-white rounded-xl border border-red-200 p-4">
+              <h3 className="font-bold text-red-600 mb-3">Solicitações pendentes</h3>
+              <div className="space-y-2">
+                {data.serviceRequests.filter(s => s.status === 'pendente').slice(0, 5).map(s => (
+                  <div key={s.id} className="flex items-center justify-between text-sm border-b border-gray-100 pb-2 last:border-0">
+                    <div>
+                      <span className="font-medium text-gray-700">{s.projectName}</span>
+                      <span className="text-gray-400 mx-2">·</span>
+                      <span className="text-gray-500">{REQUEST_TYPE_LABELS[s.type] || s.type}</span>
+                    </div>
+                    <button onClick={() => setTab('requests')} className="text-verde-medio text-xs font-medium hover:underline cursor-pointer">Ver</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {m.openReviews > 0 && (
             <div className="bg-white rounded-xl border border-ocre/30 p-4">
-              <h3 className="font-bold text-ocre mb-3">Revisões técnicas pendentes</h3>
+              <h3 className="font-bold text-ocre mb-3">Revisões pendentes</h3>
               <div className="space-y-2">
                 {data.reviewRequests.slice(0, 5).map(r => (
                   <div key={r.id} className="flex items-center justify-between text-sm border-b border-gray-100 pb-2 last:border-0">
@@ -229,19 +333,13 @@ export default function AdminDashboard({ data }: Props) {
                       <span className="text-gray-400 mx-2">·</span>
                       <span className="text-gray-500">{r.entityType === 'observation' ? 'Observação' : 'Espécie'}</span>
                     </div>
-                    <button
-                      onClick={() => setTab('reviews')}
-                      className="text-verde-medio text-xs font-medium hover:underline cursor-pointer"
-                    >
-                      Ver
-                    </button>
+                    <button onClick={() => setTab('reviews')} className="text-verde-medio text-xs font-medium hover:underline cursor-pointer">Ver</button>
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Recent visits */}
           <div className="bg-white rounded-xl shadow-sm p-4">
             <h3 className="font-bold text-verde-cerrado mb-3">Últimas visitas técnicas</h3>
             <div className="space-y-2">
@@ -254,19 +352,12 @@ export default function AdminDashboard({ data }: Props) {
                     <span className="text-gray-400 mx-2">·</span>
                     <span className="text-gray-400 text-xs">{new Date(v.startedAt).toLocaleDateString('pt-BR')}</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-400">{v.actionCount} ações</span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${
-                      v.status === 'finalizada' ? 'bg-verde-medio/10 text-verde-medio' : 'bg-ocre/10 text-ocre'
-                    }`}>
-                      {v.status === 'finalizada' ? 'Finalizada' : 'Em andamento'}
-                    </span>
-                  </div>
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${v.status === 'finalizada' ? 'bg-verde-medio/10 text-verde-medio' : 'bg-ocre/10 text-ocre'}`}>
+                    {v.status === 'finalizada' ? 'Finalizada' : 'Em andamento'}
+                  </span>
                 </div>
               ))}
-              {data.recentVisits.length === 0 && (
-                <p className="text-gray-400 text-sm text-center py-4">Nenhuma visita registrada.</p>
-              )}
+              {data.recentVisits.length === 0 && <p className="text-gray-400 text-sm text-center py-4">Nenhuma visita registrada.</p>}
             </div>
           </div>
         </div>
@@ -278,90 +369,20 @@ export default function AdminDashboard({ data }: Props) {
           <div className="p-4 border-b border-gray-100">
             <h3 className="font-bold text-verde-cerrado">Projetos ({data.projects.length})</h3>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-gray-200 bg-gray-50">
-                  <th className="text-left py-3 px-4 font-medium text-gray-500">Projeto</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-500">Tipo</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-500">Local</th>
-                  <th className="text-center py-3 px-4 font-medium text-gray-500">Status</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-500">Plano</th>
-                  <th className="text-center py-3 px-4 font-medium text-gray-500">Árvores</th>
-                  <th className="text-center py-3 px-4 font-medium text-gray-500">Membros</th>
-                  <th className="text-center py-3 px-4 font-medium text-gray-500">Visitas</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-500">Gestor</th>
-                  <th className="text-center py-3 px-4 font-medium text-gray-500">Setup</th>
-                  <th className="text-center py-3 px-4 font-medium text-gray-500">Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.projects.map(p => (
-                  <tr key={p.id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-3 px-4">
-                      <a href={`/${p.slug}/painel`} className="font-medium text-verde-cerrado hover:underline">
-                        {p.name}
-                      </a>
-                      <p className="text-xs text-gray-400">{new Date(p.createdAt).toLocaleDateString('pt-BR')}</p>
-                    </td>
-                    <td className="py-3 px-4 text-gray-600">{TYPE_LABELS[p.type] || p.type}</td>
-                    <td className="py-3 px-4 text-gray-600">{p.city}/{p.state}</td>
-                    <td className="py-3 px-4 text-center">
-                      <select
-                        value={p.status}
-                        onChange={e => handleUpdateProjectStatus(p.id, e.target.value)}
-                        className={`text-xs px-2 py-1 rounded-full font-medium border-0 cursor-pointer ${STATUS_COLORS[p.status] || ''}`}
-                      >
-                        <option value="ativo">Ativo</option>
-                        <option value="trial">Trial</option>
-                        <option value="suspenso">Suspenso</option>
-                        <option value="inativo">Inativo</option>
-                      </select>
-                    </td>
-                    <td className="py-3 px-4">
-                      <select
-                        value={p.planId || ''}
-                        onChange={e => handleAssignPlan(p.id, e.target.value)}
-                        disabled={updatingPlan === p.id}
-                        className="text-xs border border-gray-200 rounded px-2 py-1 bg-white cursor-pointer disabled:opacity-50"
-                      >
-                        <option value="">Sem plano</option>
-                        {data.plans.map(plan => (
-                          <option key={plan.id} value={plan.id}>{plan.displayName}</option>
-                        ))}
-                      </select>
-                    </td>
-                    <td className="py-3 px-4 text-center font-medium">{p.treeCount}</td>
-                    <td className="py-3 px-4 text-center">{p.memberCount}</td>
-                    <td className="py-3 px-4 text-center">{p.visitCount}</td>
-                    <td className="py-3 px-4 text-gray-500 text-xs">{p.gestorEmail || '—'}</td>
-                    <td className="py-3 px-4 text-center">
-                      {p.setupFee ? (
-                        <div className="text-xs">
-                          <span className={`font-medium ${p.setupPaid ? 'text-verde-medio' : 'text-ocre'}`}>
-                            R$ {p.setupFee.toLocaleString('pt-BR')}
-                          </span>
-                          <br />
-                          <span className="text-gray-400">
-                            {p.setupPaid ? '✓ Pago' : p.setupPayment === 'parcelado' ? `${p.setupInstallments}x pendente` : 'À vista pendente'}
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-gray-300 text-xs">—</span>
-                      )}
-                    </td>
-                    <td className="py-3 px-4 text-center space-x-2">
-                      <a href={`/${p.slug}/painel`} className="text-verde-medio text-xs hover:underline">
-                        Painel
-                      </a>
-                      <a href={`/${p.slug}/painel/qrcodes`} className="text-ocre text-xs hover:underline">
-                        QR Codes
-                      </a>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="divide-y divide-gray-100">
+            {data.projects.map(p => (
+              <ProjectCard
+                key={p.id}
+                project={p}
+                plans={data.plans}
+                isEditing={editingProject === p.id}
+                updatingPlan={updatingPlan}
+                onToggleEdit={() => setEditingProject(editingProject === p.id ? null : p.id)}
+                onAssignPlan={handleAssignPlan}
+                onUpdateStatus={handleUpdateProjectStatus}
+                onEditField={handleEditProject}
+              />
+            ))}
           </div>
         </div>
       )}
@@ -379,7 +400,7 @@ export default function AdminDashboard({ data }: Props) {
                     {!plan.active && <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Inativo</span>}
                   </div>
                   <p className="text-3xl font-bold text-verde-cerrado">
-                    R$ {plan.monthlyPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    R$ {BRL(plan.monthlyPrice)}
                     <span className="text-sm font-normal text-gray-400">/mês</span>
                   </p>
                   <div className="text-sm text-gray-600 space-y-1">
@@ -404,33 +425,6 @@ export default function AdminDashboard({ data }: Props) {
             })}
           </div>
 
-          {/* Revenue summary */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h3 className="font-bold text-verde-cerrado mb-4">Resumo financeiro</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {data.plans.map(plan => {
-                const count = data.projects.filter(p => p.planId === plan.id && p.status === 'ativo').length;
-                return (
-                  <div key={plan.id} className="text-center">
-                    <p className="text-sm text-gray-500">{plan.displayName}</p>
-                    <p className="text-lg font-bold text-verde-cerrado">{count} ativos</p>
-                    <p className="text-sm text-gray-400">
-                      R$ {(count * plan.monthlyPrice).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}/mês
-                    </p>
-                  </div>
-                );
-              })}
-              <div className="text-center border-l-2 border-verde-medio pl-4">
-                <p className="text-sm text-gray-500">Total</p>
-                <p className="text-xl font-bold text-verde-cerrado">
-                  R$ {data.metrics.monthlyRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                </p>
-                <p className="text-sm text-gray-400">/mês</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Service pricing reference */}
           <div className="bg-white rounded-xl shadow-sm p-6">
             <h3 className="font-bold text-verde-cerrado mb-4">Tabela de serviços avulsos</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -456,36 +450,64 @@ export default function AdminDashboard({ data }: Props) {
 
       {/* Technicians */}
       {tab === 'technicians' && (
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          <h3 className="font-bold text-verde-cerrado mb-4">Técnicos cadastrados ({data.technicians.length})</h3>
-          {data.technicians.length === 0 ? (
-            <p className="text-gray-400 text-center py-8">Nenhum técnico cadastrado.</p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {data.technicians.map(tech => (
-                <div key={tech.id} className="flex items-center gap-3 p-3 border border-gray-100 rounded-lg">
-                  {tech.image ? (
-                    <img src={tech.image} alt="" className="w-10 h-10 rounded-full" />
-                  ) : (
-                    <div className="w-10 h-10 rounded-full bg-verde-medio/10 flex items-center justify-center text-verde-medio font-bold">
-                      {tech.name.charAt(0)}
-                    </div>
-                  )}
-                  <div className="min-w-0">
-                    <p className="font-medium text-gray-700 truncate">{tech.name}</p>
-                    <p className="text-xs text-gray-400 truncate">{tech.email}</p>
-                  </div>
-                </div>
-              ))}
+        <div className="space-y-6">
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <h3 className="font-bold text-verde-cerrado mb-4">Cadastrar técnico</h3>
+            <div className="flex gap-3">
+              <input
+                type="email"
+                value={techEmail}
+                onChange={e => setTechEmail(e.target.value)}
+                placeholder="Email do técnico (Google)"
+                className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-verde-medio/50 focus:border-verde-medio outline-none"
+                onKeyDown={e => e.key === 'Enter' && handleRegisterTechnician()}
+              />
+              <button
+                onClick={handleRegisterTechnician}
+                disabled={techLoading || !techEmail.trim()}
+                className="bg-verde-cerrado text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-verde-medio transition-colors disabled:opacity-50 cursor-pointer"
+              >
+                {techLoading ? 'Cadastrando...' : 'Cadastrar'}
+              </button>
             </div>
-          )}
+            <p className="text-xs text-gray-400 mt-2">O técnico precisa fazer login com este email Google para acessar o sistema.</p>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <h3 className="font-bold text-verde-cerrado mb-4">Técnicos cadastrados ({data.technicians.length})</h3>
+            {data.technicians.length === 0 ? (
+              <p className="text-gray-400 text-center py-8">Nenhum técnico cadastrado.</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {data.technicians.map(tech => (
+                  <div key={tech.id} className="flex items-center gap-3 p-3 border border-gray-100 rounded-lg">
+                    {tech.image ? (
+                      <img src={tech.image} alt="" className="w-10 h-10 rounded-full" />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-verde-medio/10 flex items-center justify-center text-verde-medio font-bold">
+                        {tech.name.charAt(0)}
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-gray-700 truncate">{tech.name}</p>
+                      <p className="text-xs text-gray-400 truncate">{tech.email}</p>
+                    </div>
+                    <div className="text-right text-xs text-gray-500">
+                      <p className="font-medium">{tech.visitCount}</p>
+                      <p>visitas</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
 
       {/* Reviews */}
       {tab === 'reviews' && (
         <div className="bg-white rounded-xl shadow-sm p-6">
-          <h3 className="font-bold text-verde-cerrado mb-4">Revisões técnicas online ({data.reviewRequests.length})</h3>
+          <h3 className="font-bold text-verde-cerrado mb-4">Revisões técnicas ({data.reviewRequests.length})</h3>
           {data.reviewRequests.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-4xl mb-3">✅</p>
@@ -524,7 +546,7 @@ export default function AdminDashboard({ data }: Props) {
                 {data.recentVisits.map(v => (
                   <tr key={v.id} className="border-b border-gray-100 hover:bg-gray-50">
                     <td className="py-3 px-4">
-                      <a href={`/${v.projectSlug}/painel/visitas`} className="text-verde-cerrado font-medium hover:underline">
+                      <a href={`/${v.projectSlug}/painel/visitas`} target="_blank" rel="noopener noreferrer" className="text-verde-cerrado font-medium hover:underline">
                         {v.projectName}
                       </a>
                     </td>
@@ -532,9 +554,7 @@ export default function AdminDashboard({ data }: Props) {
                     <td className="py-3 px-4 text-gray-600 max-w-[200px] truncate">{v.purpose}</td>
                     <td className="py-3 px-4 text-center font-medium">{v.actionCount}</td>
                     <td className="py-3 px-4 text-center">
-                      <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                        v.status === 'finalizada' ? 'bg-verde-medio/10 text-verde-medio' : 'bg-ocre/10 text-ocre'
-                      }`}>
+                      <span className={`text-xs px-2 py-1 rounded-full font-medium ${v.status === 'finalizada' ? 'bg-verde-medio/10 text-verde-medio' : 'bg-ocre/10 text-ocre'}`}>
                         {v.status === 'finalizada' ? 'Finalizada' : 'Em andamento'}
                       </span>
                     </td>
@@ -542,17 +562,13 @@ export default function AdminDashboard({ data }: Props) {
                       {v.totalBilled ? (
                         <div className="text-xs">
                           <span className={`font-medium ${v.billingPaid ? 'text-verde-medio' : 'text-ocre'}`}>
-                            R$ {v.totalBilled.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                            R$ {BRL(v.totalBilled)}
                           </span>
                           <br />
-                          <span className="text-gray-400">
-                            {v.billingPaid ? '✓ Pago' : 'Pendente'}
-                          </span>
+                          <span className="text-gray-400">{v.billingPaid ? '✓ Pago' : 'Pendente'}</span>
                         </div>
                       ) : (
-                        <span className="text-xs text-gray-400">
-                          R$ {v.baseFee.toLocaleString('pt-BR')} + desloc.
-                        </span>
+                        <span className="text-xs text-gray-400">R$ {v.baseFee.toLocaleString('pt-BR')} + desloc.</span>
                       )}
                     </td>
                     <td className="py-3 px-4 text-gray-500 text-xs">
@@ -566,16 +582,165 @@ export default function AdminDashboard({ data }: Props) {
           </div>
         </div>
       )}
+
+      {/* Service Requests */}
+      {tab === 'requests' && (
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <h3 className="font-bold text-verde-cerrado mb-4">Solicitações técnicas ({data.serviceRequests.length})</h3>
+          {data.serviceRequests.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-4xl mb-3">📋</p>
+              <p className="text-gray-400">Nenhuma solicitação recebida.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {data.serviceRequests.map(s => (
+                <ServiceRequestCard
+                  key={s.id}
+                  request={s}
+                  technicians={data.technicians}
+                  onAssign={handleAssignTechnician}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
 
-function MetricCard({ label, value, icon, highlight }: { label: string; value: string | number; icon: string; highlight?: boolean }) {
+function MetricCard({ label, value, highlight, onClick }: { label: string; value: string | number; highlight?: boolean; onClick?: () => void }) {
   return (
-    <div className={`bg-white rounded-xl shadow-sm p-4 text-center ${highlight ? 'ring-2 ring-terracota/30' : ''}`}>
-      <p className="text-2xl mb-1">{icon}</p>
+    <div
+      className={`bg-white rounded-xl shadow-sm p-4 text-center ${highlight ? 'ring-2 ring-red-300' : ''} ${onClick ? 'cursor-pointer hover:shadow-md transition-shadow' : ''}`}
+      onClick={onClick}
+    >
       <p className="text-2xl font-bold text-verde-cerrado">{value}</p>
-      <p className="text-xs text-gray-500">{label}</p>
+      <p className="text-xs text-gray-500 mt-1">{label}</p>
+    </div>
+  );
+}
+
+function PlanExpirationBar({ expiresAt }: { expiresAt: string | null }) {
+  if (!expiresAt) return <span className="text-xs text-gray-300">Sem expiração</span>;
+  const now = Date.now();
+  const expires = new Date(expiresAt).getTime();
+  const totalDays = 365;
+  const daysLeft = Math.max(0, Math.ceil((expires - now) / (1000 * 60 * 60 * 24)));
+  const pct = Math.min(100, Math.max(0, (daysLeft / totalDays) * 100));
+  const isUrgent = daysLeft <= 60;
+
+  return (
+    <div className="w-full">
+      <div className="flex justify-between text-[10px] mb-0.5">
+        <span className={isUrgent ? 'text-red-600 font-bold' : 'text-gray-500'}>{daysLeft} dias restantes</span>
+      </div>
+      <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-all ${isUrgent ? 'bg-red-500' : 'bg-verde-medio'}`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function ProjectCard({ project: p, plans, isEditing, updatingPlan, onToggleEdit, onAssignPlan, onUpdateStatus, onEditField }: {
+  project: ProjectRow;
+  plans: PlanRow[];
+  isEditing: boolean;
+  updatingPlan: string | null;
+  onToggleEdit: () => void;
+  onAssignPlan: (id: string, planId: string) => void;
+  onUpdateStatus: (id: string, status: string) => void;
+  onEditField: (id: string, field: string, value: string) => void;
+}) {
+  const [editName, setEditName] = useState(p.name);
+  const [editGestor, setEditGestor] = useState(p.gestorEmail || '');
+
+  return (
+    <div className="p-4 space-y-3">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <a href={`/${p.slug}/painel`} target="_blank" rel="noopener noreferrer" className="font-bold text-verde-cerrado hover:underline truncate">
+              {p.name}
+            </a>
+            <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[p.status] || ''}`}>{p.status}</span>
+          </div>
+          <p className="text-xs text-gray-400">{TYPE_LABELS[p.type] || p.type} · {p.city}/{p.state} · {new Date(p.createdAt).toLocaleDateString('pt-BR')}</p>
+        </div>
+        <div className="flex items-center gap-2 text-xs">
+          <span className="bg-verde-medio/10 text-verde-medio px-2 py-0.5 rounded-full">{p.treeCount} árv.</span>
+          <span className="text-gray-400">{p.memberCount} membros</span>
+          <button onClick={onToggleEdit} className="text-ocre hover:underline cursor-pointer">{isEditing ? 'Fechar' : 'Editar'}</button>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-4 text-xs">
+        <div className="flex items-center gap-2">
+          <span className="text-gray-500">Plano:</span>
+          <select
+            value={p.planId || ''}
+            onChange={e => onAssignPlan(p.id, e.target.value)}
+            disabled={updatingPlan === p.id}
+            className="border border-gray-200 rounded px-2 py-1 bg-white cursor-pointer disabled:opacity-50 text-xs"
+          >
+            <option value="">Sem plano</option>
+            {plans.map(plan => (<option key={plan.id} value={plan.id}>{plan.displayName}</option>))}
+          </select>
+        </div>
+        <div className="flex-1 max-w-[200px]">
+          <PlanExpirationBar expiresAt={p.planExpiresAt} />
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-gray-500">Status:</span>
+          <select
+            value={p.status}
+            onChange={e => onUpdateStatus(p.id, e.target.value)}
+            className={`px-2 py-1 rounded-full font-medium border-0 cursor-pointer text-xs ${STATUS_COLORS[p.status] || ''}`}
+          >
+            <option value="ativo">Ativo</option>
+            <option value="trial">Trial</option>
+            <option value="suspenso">Suspenso</option>
+            <option value="inativo">Inativo</option>
+          </select>
+        </div>
+      </div>
+
+      {p.setupFee && (
+        <div className="text-xs text-gray-500">
+          Setup: <span className={p.setupPaid ? 'text-verde-medio' : 'text-ocre'}>R$ {p.setupFee.toLocaleString('pt-BR')}</span>
+          {p.setupPaid ? ' ✓ Pago' : ` · ${p.setupPayment === 'parcelado' ? `${p.setupInstallments}x pendente` : 'À vista pendente'}`}
+        </div>
+      )}
+
+      {isEditing && (
+        <div className="bg-gray-50 rounded-lg p-3 space-y-3 text-sm">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs text-gray-500 block mb-1">Nome do projeto</label>
+              <div className="flex gap-2">
+                <input value={editName} onChange={e => setEditName(e.target.value)} className="flex-1 border border-gray-300 rounded px-2 py-1 text-sm" />
+                <button onClick={() => onEditField(p.id, 'name', editName)} className="bg-verde-cerrado text-white px-3 py-1 rounded text-xs cursor-pointer">Salvar</button>
+              </div>
+            </div>
+            <div>
+              <label className="text-xs text-gray-500 block mb-1">Email do gestor</label>
+              <div className="flex gap-2">
+                <input value={editGestor} onChange={e => setEditGestor(e.target.value)} className="flex-1 border border-gray-300 rounded px-2 py-1 text-sm" />
+                <button onClick={() => onEditField(p.id, 'gestorEmail', editGestor)} className="bg-verde-cerrado text-white px-3 py-1 rounded text-xs cursor-pointer">Salvar</button>
+              </div>
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <a href={`/${p.slug}/painel`} target="_blank" rel="noopener noreferrer" className="text-verde-medio text-xs hover:underline">Painel ↗</a>
+            <a href={`/${p.slug}/painel/qrcodes`} target="_blank" rel="noopener noreferrer" className="text-ocre text-xs hover:underline">QR Codes ↗</a>
+            <a href={`/${p.slug}/dashboard`} target="_blank" rel="noopener noreferrer" className="text-gray-500 text-xs hover:underline">Dashboard ↗</a>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -589,9 +754,7 @@ function ReviewCard({ review, onResolve }: { review: ReviewRow; onResolve: (id: 
       <div className="flex items-start justify-between gap-2">
         <div>
           <p className="font-medium text-gray-700">
-            <a href={`/${review.projectSlug}/painel`} className="text-verde-cerrado hover:underline">
-              {review.projectName}
-            </a>
+            <a href={`/${review.projectSlug}/painel`} target="_blank" rel="noopener noreferrer" className="text-verde-cerrado hover:underline">{review.projectName}</a>
             <span className="text-gray-400 mx-2">·</span>
             <span className="text-gray-500">{review.entityType === 'observation' ? 'Observação' : 'Espécie'}</span>
           </p>
@@ -606,18 +769,12 @@ function ReviewCard({ review, onResolve }: { review: ReviewRow; onResolve: (id: 
         <div className="flex items-center gap-3 text-xs">
           <span className="text-gray-500">{review.treeCount} árvore(s)</span>
           <span className={`font-medium ${review.billingPaid ? 'text-verde-medio' : 'text-ocre'}`}>
-            R$ {review.reviewFee.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-            {review.billingPaid ? ' ✓ Pago' : ' Pendente'}
+            R$ {BRL(review.reviewFee)} {review.billingPaid ? '✓ Pago' : 'Pendente'}
           </span>
         </div>
       )}
       {!responding ? (
-        <button
-          onClick={() => setResponding(true)}
-          className="text-verde-medio text-sm font-medium hover:underline cursor-pointer"
-        >
-          Responder
-        </button>
+        <button onClick={() => setResponding(true)} className="text-verde-medio text-sm font-medium hover:underline cursor-pointer">Responder</button>
       ) : (
         <div className="space-y-2">
           <textarea
@@ -630,18 +787,62 @@ function ReviewCard({ review, onResolve }: { review: ReviewRow; onResolve: (id: 
             <button
               onClick={() => { onResolve(review.id, response); setResponding(false); }}
               className="bg-verde-medio text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-verde-cerrado transition-colors cursor-pointer"
-            >
-              Resolver
-            </button>
-            <button
-              onClick={() => { setResponding(false); setResponse(''); }}
-              className="text-gray-400 text-sm hover:underline cursor-pointer"
-            >
-              Cancelar
-            </button>
+            >Resolver</button>
+            <button onClick={() => { setResponding(false); setResponse(''); }} className="text-gray-400 text-sm hover:underline cursor-pointer">Cancelar</button>
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function ServiceRequestCard({ request: s, technicians, onAssign }: {
+  request: ServiceRequestRow;
+  technicians: TechnicianRow[];
+  onAssign: (requestId: string, technicianId: string) => void;
+}) {
+  const [selectedTech, setSelectedTech] = useState(s.assignedTechnicianId || '');
+
+  return (
+    <div className="border border-gray-200 rounded-lg p-4 space-y-3">
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <p className="font-medium text-gray-700">
+            <a href={`/${s.projectSlug}/dashboard`} target="_blank" rel="noopener noreferrer" className="text-verde-cerrado hover:underline">{s.projectName}</a>
+            <span className="text-gray-400 mx-2">·</span>
+            <span className="text-gray-500">{s.gestorEmail}</span>
+          </p>
+          <p className="text-xs text-gray-400">{new Date(s.createdAt).toLocaleDateString('pt-BR')}</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{REQUEST_TYPE_LABELS[s.type] || s.type}</span>
+          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${REQUEST_STATUS_COLORS[s.status] || ''}`}>{s.status}</span>
+        </div>
+      </div>
+      <p className="text-sm text-gray-700 bg-gray-50 rounded-lg p-3">{s.description}</p>
+      {s.status === 'pendente' && (
+        <div className="flex items-center gap-3">
+          <select
+            value={selectedTech}
+            onChange={e => setSelectedTech(e.target.value)}
+            className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm flex-1 max-w-xs"
+          >
+            <option value="">Selecionar técnico...</option>
+            {technicians.map(t => (<option key={t.id} value={t.id}>{t.name}</option>))}
+          </select>
+          <button
+            onClick={() => selectedTech && onAssign(s.id, selectedTech)}
+            disabled={!selectedTech}
+            className="bg-verde-cerrado text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-verde-medio transition-colors disabled:opacity-50 cursor-pointer"
+          >Atribuir</button>
+        </div>
+      )}
+      {s.assignedTechnicianId && (
+        <p className="text-xs text-gray-500">
+          Técnico: <span className="font-medium">{technicians.find(t => t.id === s.assignedTechnicianId)?.name || s.assignedTechnicianId}</span>
+        </p>
+      )}
+      {s.adminNote && <p className="text-xs text-gray-500 italic">Nota: {s.adminNote}</p>}
     </div>
   );
 }

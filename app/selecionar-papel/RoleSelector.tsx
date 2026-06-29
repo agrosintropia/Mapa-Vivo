@@ -52,14 +52,14 @@ export default function RoleSelector({ userName }: RoleSelectorProps) {
       }
 
       const data = await res.json();
-      if (selected === 'morador') {
-        router.push('/mata-viva/mapa');
-      } else if (selected === 'tecnico') {
+      if (selected === 'tecnico') {
         router.push('/projetos');
-      } else if (data.projectSlug) {
-        router.push(`/${data.projectSlug}/painel`);
+      } else if (selected === 'gestor' && data.projectSlug) {
+        router.push(`/${data.projectSlug}/dashboard`);
+      } else if (selected === 'morador' && data.projectSlug) {
+        router.push(`/${data.projectSlug}/mapa`);
       } else {
-        router.push('/mata-viva/painel');
+        router.push('/');
       }
       router.refresh();
     } catch {

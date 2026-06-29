@@ -17,10 +17,14 @@ export default async function SelecionarPapelPage() {
   });
 
   if (existing) {
+    if (existing.role === 'admin') redirect('/admin');
     const project = existing.project_id
       ? await prisma.project.findUnique({ where: { id: existing.project_id } })
       : await prisma.project.findFirst();
-    redirect(project ? `/${project.slug}/painel` : '/');
+    if (!project) redirect('/');
+    if (existing.role === 'tecnico') redirect('/projetos');
+    if (existing.role === 'gestor') redirect(`/${project.slug}/dashboard`);
+    redirect(`/${project.slug}/mapa`);
   }
 
   return (

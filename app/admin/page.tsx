@@ -31,7 +31,7 @@ export default async function AdminPage() {
     await prisma.profile.update({ where: { id: session.user.id }, data: { role: 'admin' } });
   }
 
-  const [projects, plans, technicians, reviewRequests, totalTrees, totalSpecies, totalObservations, recentVisits, allBilledVisits, allBilledReviews] = await Promise.all([
+  const [projects, plans, technicians, reviewRequests, totalTrees, totalSpecies, totalObservations, recentVisits, allBilledVisits, allBilledReviews, serviceRequests, techVisitCounts, techTreeCounts] = await Promise.all([
     prisma.project.findMany({
       include: {
         plan: true,
@@ -63,6 +63,12 @@ export default async function AdminPage() {
     }),
     prisma.technicalVisit.findMany({ where: { total_billed: { not: null } } }),
     prisma.reviewRequest.findMany({ where: { review_fee: { not: null } } }),
+    prisma.serviceRequest.findMany({
+      orderBy: { created_at: 'desc' },
+      include: { project: { select: { name: true, slug: true, gestor_email: true } } },
+    }),
+    prisma.technicalVisit.groupBy({ by: ['technician_id'], _count: true }),
+    prisma.tree.groupBy({ by: ['project_id'], _count: true }),
   ]);
 
   const data = {
@@ -81,6 +87,7 @@ export default async function AdminPage() {
       setupInstallments: p.setup_installments,
       setupPayment: p.setup_payment,
       setupPaid: p.setup_paid,
+      planExpiresAt: p.plan_expires_at?.toISOString() || null,
       createdAt: p.created_at.toISOString(),
       treeCount: p._count.trees,
       memberCount: p._count.members,
@@ -97,11 +104,28 @@ export default async function AdminPage() {
       features: p.features,
       active: p.active,
     })),
-    technicians: technicians.map(t => ({
-      id: t.id,
-      name: t.name,
-      email: t.user?.email || '',
-      image: t.user?.image || null,
+    technicians: technicians.map(t => {
+      const visitCount = techVisitCounts.find(v => v.technician_id === t.id)?._count || 0;
+      return {
+        id: t.id,
+        name: t.name,
+        email: t.user?.email || '',
+        image: t.user?.image || null,
+        visitCount,
+      };
+    }),
+    serviceRequests: serviceRequests.map(s => ({
+      id: s.id,
+      projectName: s.project.name,
+      projectSlug: s.project.slug,
+      gestorEmail: s.project.gestor_email || '',
+      requestedBy: s.requested_by,
+      type: s.type,
+      description: s.description,
+      status: s.status,
+      assignedTechnicianId: s.assigned_technician_id,
+      adminNote: s.admin_note,
+      createdAt: s.created_at.toISOString(),
     })),
     reviewRequests: reviewRequests.map(r => ({
       id: r.id,
@@ -146,6 +170,7 @@ export default async function AdminPage() {
       visitsPending: allBilledVisits.filter(v => !v.billing_paid).length,
       reviewRevenue: allBilledReviews.reduce((sum, r) => sum + (r.review_fee || 0), 0),
       reviewsPending: allBilledReviews.filter(r => !r.billing_paid).length,
+      openServiceRequests: serviceRequests.filter(s => s.status === 'pendente').length,
     },
   };
 
@@ -162,9 +187,7 @@ export default async function AdminPage() {
           </div>
         </div>
         <nav className="flex items-center gap-3 text-sm">
-          <a href="/admin/logos" className="opacity-60 hover:opacity-100 text-xs">Logos</a>
-          <a href="/projetos" className="opacity-60 hover:opacity-100 text-xs">Projetos</a>
-          <a href="/" className="opacity-60 hover:opacity-100 text-xs">Site</a>
+          <a href="/" target="_blank" rel="noopener noreferrer" className="opacity-60 hover:opacity-100 text-xs">Site ↗</a>
           <a href="/selecionar-papel/trocar" className="bg-white/10 px-2.5 py-1 rounded-lg text-xs hover:bg-white/20 transition-colors">
             {session.user.name?.split(' ')[0] || 'Admin'}
           </a>
