@@ -1,7 +1,11 @@
 import { Metadata } from 'next';
 import { prisma } from '@/lib/prisma';
+import { auth } from '@/lib/auth';
 import { notFound } from 'next/navigation';
 import SubmissionForm from '@/components/SubmissionForm';
+import AppHeader from '@/components/AppHeader';
+import BottomNav from '@/components/BottomNav';
+import WhatsAppHelp from '@/components/WhatsAppHelp';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,15 +36,19 @@ export default async function SubmeterPage({ params }: PageProps) {
       orderBy: { common_name: 'asc' },
     });
 
+    const session = await auth();
+    const userRole = session?.user ? ((session.user as Record<string, unknown>).role as string) || 'morador' : 'morador';
+
     return (
-      <main className="min-h-screen bg-areia flex flex-col">
-        <header className="bg-verde-cerrado text-white px-4 py-3 flex items-center gap-3 shadow-md z-50">
-          <a href={`/${project.slug}/mapa`} className="text-2xl leading-none">🌳</a>
-          <div>
-            <h1 className="font-display text-lg font-bold leading-tight">{project.name}</h1>
-            <p className="text-xs opacity-70">Reportar Ocorrência</p>
-          </div>
-        </header>
+      <main className="min-h-screen bg-areia flex flex-col has-bottom-nav">
+        <AppHeader
+          projectName={project.name}
+          projectSlug={project.slug}
+          subtitle="Reportar Ocorrência"
+          userRole={userRole}
+          userName={session?.user?.name || undefined}
+          showBack
+        />
         <SubmissionForm
           projectSlug={project.slug}
           species={species.map(s => ({
@@ -49,6 +57,8 @@ export default async function SubmeterPage({ params }: PageProps) {
             scientific_name: s.scientific_name,
           }))}
         />
+        {session?.user && <BottomNav projectSlug={project.slug} userRole={userRole} />}
+        <WhatsAppHelp projectName={project.name} userName={session?.user?.name || undefined} />
       </main>
     );
   } catch {

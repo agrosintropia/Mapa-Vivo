@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { notFound, redirect } from 'next/navigation';
 import QRCodesClient from './QRCodesClient';
+import AppHeader from '@/components/AppHeader';
 
 export const dynamic = 'force-dynamic';
 
@@ -55,18 +56,17 @@ export default async function QRCodesPage({ params }: PageProps) {
 
   return (
     <main className="min-h-screen bg-areia print:bg-white flex flex-col">
-      <header className="bg-verde-cerrado text-white px-6 py-4 flex items-center justify-between shadow-md z-50 print:hidden">
-        <div className="flex items-center gap-3">
-          <a href={`/${project.slug}/painel`} className="text-2xl leading-none">🌳</a>
-          <div>
-            <h1 className="font-display text-xl font-bold">{project.name}</h1>
-            <p className="text-xs opacity-70">QR Codes · {data.length} árvores</p>
-          </div>
-        </div>
-        <a href={`/${project.slug}/painel`} className="text-sm hover:underline opacity-80 hover:opacity-100">
-          Voltar ao painel
-        </a>
-      </header>
+      <div className="print:hidden">
+        <AppHeader
+          projectName={project.name}
+          projectSlug={project.slug}
+          subtitle={`QR Codes · ${data.length} árvores`}
+          userRole="admin"
+          userName={session.user.name || undefined}
+          showBack
+          backHref={`/${project.slug}/painel`}
+        />
+      </div>
       <QRCodesClient trees={data} projectName={project.name} projectSlug={project.slug} />
     </main>
   );

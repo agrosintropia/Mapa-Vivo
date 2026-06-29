@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { notFound, redirect } from 'next/navigation';
 import VisitSession from './VisitSession';
+import AppHeader from '@/components/AppHeader';
+import BottomNav from '@/components/BottomNav';
 
 export const dynamic = 'force-dynamic';
 
@@ -42,11 +44,23 @@ export default async function VisitaPage({ params }: { params: { projectSlug: st
   });
 
   return (
-    <VisitSession
-      project={{ id: project.id, name: project.name, slug: project.slug, boundary: project.boundary }}
-      trees={trees.map(t => ({ ...t }))}
-      species={species}
-      userName={session.user.name || 'Técnico'}
-    />
+    <main className="min-h-screen bg-areia flex flex-col has-bottom-nav">
+      <AppHeader
+        projectName={project.name}
+        projectSlug={project.slug}
+        subtitle="Visita Técnica"
+        userRole="tecnico"
+        userName={session.user.name || 'Técnico'}
+        showBack
+        backHref={`/${params.projectSlug}/painel`}
+      />
+      <VisitSession
+        project={{ id: project.id, name: project.name, slug: project.slug, boundary: project.boundary }}
+        trees={trees.map(t => ({ ...t }))}
+        species={species}
+        userName={session.user.name || 'Técnico'}
+      />
+      <BottomNav projectSlug={params.projectSlug} userRole="tecnico" />
+    </main>
   );
 }

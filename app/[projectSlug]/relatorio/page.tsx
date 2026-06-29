@@ -1,7 +1,10 @@
 import { Metadata } from 'next';
 import { prisma } from '@/lib/prisma';
+import { auth } from '@/lib/auth';
 import { notFound } from 'next/navigation';
 import PrintButton from '@/components/PrintButton';
+import AppHeader from '@/components/AppHeader';
+import BottomNav from '@/components/BottomNav';
 
 export const dynamic = 'force-dynamic';
 
@@ -108,21 +111,21 @@ export default async function RelatorioPage({ params }: PageProps) {
       baixo: 'Baixo', arbustivo: 'Arbustivo',
     };
 
+    const session = await auth();
+    const userRole = session?.user ? ((session.user as Record<string, unknown>).role as string) || 'morador' : 'morador';
+
     return (
-      <main className="min-h-screen bg-areia flex flex-col">
-        <header className="bg-verde-cerrado text-white px-4 py-3 flex items-center justify-between shadow-md z-50 print:shadow-none">
-          <div className="flex items-center gap-3">
-            <a href={`/${project.slug}/mapa`} className="text-2xl leading-none print:hidden">🌳</a>
-            <div>
-              <h1 className="font-display text-lg font-bold leading-tight">{project.name}</h1>
-              <p className="text-xs opacity-70">Relatório de Diversidade</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 print:hidden">
-            <a href={`/${project.slug}/dashboard`} className="text-sm hover:underline opacity-80">Dashboard</a>
-            <PrintButton />
-          </div>
-        </header>
+      <main className="min-h-screen bg-areia flex flex-col has-bottom-nav">
+        <div className="print:hidden">
+          <AppHeader
+            projectName={project.name}
+            projectSlug={project.slug}
+            subtitle="Relatório de Diversidade"
+            userRole={userRole}
+            userName={session?.user?.name || undefined}
+            showBack
+          />
+        </div>
 
         <div className="flex-1 p-4 md:p-8 max-w-5xl mx-auto w-full space-y-8">
           {/* Header info */}
@@ -251,6 +254,7 @@ export default async function RelatorioPage({ params }: PageProps) {
             <p className="mt-1">{project.name} — {project.city}, {project.state}</p>
           </section>
         </div>
+        {session?.user && <BottomNav projectSlug={projectSlug} userRole={userRole} />}
       </main>
     );
   } catch (error) {

@@ -1,7 +1,11 @@
 import { Metadata } from 'next';
 import { prisma } from '@/lib/prisma';
+import { auth } from '@/lib/auth';
 import { notFound } from 'next/navigation';
 import Dashboard from '@/components/Dashboard';
+import AppHeader from '@/components/AppHeader';
+import BottomNav from '@/components/BottomNav';
+import WhatsAppHelp from '@/components/WhatsAppHelp';
 import type { ProjectData } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
@@ -219,25 +223,23 @@ export default async function DashboardPage({ params }: PageProps) {
   }
 
   const { project, stats } = result;
+  const session = await auth();
+  const userRole = session?.user ? ((session.user as Record<string, unknown>).role as string) || 'morador' : 'morador';
+  const showHelp = userRole === 'morador' || userRole === 'gestor';
 
   return (
-    <main className="min-h-screen bg-areia flex flex-col">
-      <header className="bg-verde-cerrado text-white px-4 py-3 flex items-center justify-between shadow-md z-50">
-        <div className="flex items-center gap-3">
-          <a href={`/${project.slug}/mapa`} className="text-2xl leading-none">🌳</a>
-          <div>
-            <h1 className="font-display text-lg font-bold leading-tight">{project.name}</h1>
-            <p className="text-xs opacity-70">
-              Dashboard Ambiental · {project.city}, {project.state}
-            </p>
-          </div>
-        </div>
-        <nav className="flex items-center gap-4 text-sm">
-          <a href={`/${project.slug}/mapa`} className="hover:underline opacity-80 hover:opacity-100">Mapa</a>
-          <a href={`/${project.slug}/relatorio`} className="hover:underline opacity-80 hover:opacity-100">Relatório</a>
-        </nav>
-      </header>
+    <main className="min-h-screen bg-areia flex flex-col has-bottom-nav">
+      <AppHeader
+        projectName={project.name}
+        projectSlug={project.slug}
+        subtitle="Dashboard Ambiental"
+        userRole={userRole}
+        userName={session?.user?.name || undefined}
+        showBack
+      />
       <Dashboard stats={stats} projectName={project.name} />
+      {session?.user && <BottomNav projectSlug={projectSlug} userRole={userRole} />}
+      {showHelp && <WhatsAppHelp projectName={project.name} userName={session?.user?.name || undefined} />}
     </main>
   );
 }

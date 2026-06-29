@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import AppHeader from '@/components/AppHeader';
 
 export const dynamic = 'force-dynamic';
 
@@ -42,21 +43,11 @@ export default async function ProjetosPage() {
 
   return (
     <main className="min-h-screen bg-areia flex flex-col">
-      <header className="bg-verde-cerrado text-white px-4 py-3 flex items-center justify-between shadow-md z-50">
-        <div className="flex items-center gap-3">
-          <span className="text-2xl leading-none">🌳</span>
-          <div>
-            <h1 className="font-display text-lg font-bold leading-tight">Mapa Vivo</h1>
-            <p className="text-xs opacity-70">Meus Projetos</p>
-          </div>
-        </div>
-        <nav className="flex items-center gap-3 text-sm">
-          <Link href="/" className="hover:underline opacity-80">Início</Link>
-          <Link href="/selecionar-papel/trocar" className="bg-white/20 px-2 py-0.5 rounded text-xs hover:bg-white/30 transition-colors">
-            {session.user.name?.split(' ')[0]}
-          </Link>
-        </nav>
-      </header>
+      <AppHeader
+        subtitle="Meus Projetos"
+        userRole="tecnico"
+        userName={session.user.name || undefined}
+      />
 
       <div className="flex-1 p-4 md:p-8 max-w-4xl mx-auto w-full space-y-6">
         <div className="flex items-center justify-between">

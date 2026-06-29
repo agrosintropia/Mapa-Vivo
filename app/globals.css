@@ -53,6 +53,20 @@ a {
   }
 }
 
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.has-bottom-nav {
+  padding-bottom: 72px;
+}
+
+@media (min-width: 768px) {
+  .has-bottom-nav {
+    padding-bottom: 0;
+  }
+}
+
 @media print {
   body { background: white !important; }
   .print\:hidden { display: none !important; }

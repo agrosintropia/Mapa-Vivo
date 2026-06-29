@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { notFound, redirect } from 'next/navigation';
 import ApprovalQueue from '@/components/ApprovalQueue';
+import AppHeader from '@/components/AppHeader';
+import BottomNav from '@/components/BottomNav';
 
 export const dynamic = 'force-dynamic';
 
@@ -88,23 +90,18 @@ export default async function SubmissoesPage({ params }: PageProps) {
     }));
 
     return (
-      <main className="min-h-screen bg-areia flex flex-col">
-        <header className="bg-verde-cerrado text-white px-4 py-3 flex items-center justify-between shadow-md z-50">
-          <div className="flex items-center gap-3">
-            <a href={`/${project.slug}/painel`} className="text-2xl leading-none">🌳</a>
-            <div>
-              <h1 className="font-display text-lg font-bold leading-tight">{project.name}</h1>
-              <p className="text-xs opacity-70">Fila de Revisão</p>
-            </div>
-          </div>
-          <a
-            href={`/${project.slug}/painel`}
-            className="text-sm hover:underline opacity-80 hover:opacity-100"
-          >
-            Voltar ao painel
-          </a>
-        </header>
+      <main className="min-h-screen bg-areia flex flex-col has-bottom-nav">
+        <AppHeader
+          projectName={project.name}
+          projectSlug={project.slug}
+          subtitle="Fila de Revisão"
+          userRole={userRole!}
+          userName={session.user.name || undefined}
+          showBack
+          backHref={`/${project.slug}/painel`}
+        />
         <ApprovalQueue items={items} projectSlug={project.slug} />
+        <BottomNav projectSlug={projectSlug} userRole={userRole!} />
       </main>
     );
   } catch (error) {

@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import NewProjectForm from './NewProjectForm';
+import AppHeader from '@/components/AppHeader';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,16 +21,13 @@ export default async function NovoProjeto() {
 
   return (
     <main className="min-h-screen bg-areia flex flex-col">
-      <header className="bg-verde-cerrado text-white px-4 py-3 flex items-center justify-between shadow-md z-50">
-        <div className="flex items-center gap-3">
-          <span className="text-2xl leading-none">🌳</span>
-          <div>
-            <h1 className="font-display text-lg font-bold leading-tight">Mapa Vivo</h1>
-            <p className="text-xs opacity-70">Criar Novo Projeto</p>
-          </div>
-        </div>
-        <a href="/" className="text-sm hover:underline opacity-80">Voltar</a>
-      </header>
+      <AppHeader
+        subtitle="Criar Novo Projeto"
+        userRole="tecnico"
+        userName={session.user.name || undefined}
+        showBack
+        backHref="/projetos"
+      />
       <NewProjectForm />
     </main>
   );

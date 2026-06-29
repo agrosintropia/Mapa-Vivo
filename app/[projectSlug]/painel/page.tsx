@@ -3,6 +3,9 @@ import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { notFound, redirect } from 'next/navigation';
 import PainelClient from '@/components/PainelClient';
+import AppHeader from '@/components/AppHeader';
+import BottomNav from '@/components/BottomNav';
+import WhatsAppHelp from '@/components/WhatsAppHelp';
 
 export const dynamic = 'force-dynamic';
 
@@ -149,22 +152,20 @@ export default async function PainelPage({ params }: PageProps) {
     };
 
     return (
-      <main className="min-h-screen bg-areia flex flex-col">
-        <header className="bg-verde-cerrado text-white px-4 py-3 flex items-center justify-between shadow-md z-50">
-          <div className="flex items-center gap-3">
-            <a href={`/${project.slug}/mapa`} className="text-2xl leading-none">🌳</a>
-            <div>
-              <h1 className="font-display text-lg font-bold leading-tight">{project.name}</h1>
-              <p className="text-xs opacity-70">Painel de Gestão</p>
-            </div>
-          </div>
-          <nav className="flex items-center gap-4 text-sm">
-            <a href={`/${project.slug}/mapa`} className="hover:underline opacity-80 hover:opacity-100">Mapa</a>
-            <a href={`/${project.slug}/dashboard`} className="hover:underline opacity-80 hover:opacity-100">Dashboard</a>
-            <a href="/selecionar-papel/trocar" className="bg-white/20 px-2 py-0.5 rounded text-xs capitalize hover:bg-white/30 transition-colors">{userRole} ✎</a>
-          </nav>
-        </header>
+      <main className="min-h-screen bg-areia flex flex-col has-bottom-nav">
+        <AppHeader
+          projectName={project.name}
+          projectSlug={project.slug}
+          subtitle="Painel de Gestão"
+          userRole={userRole}
+          userName={session.user.name || undefined}
+          showBack
+        />
         <PainelClient data={painelData} />
+        <BottomNav projectSlug={project.slug} userRole={userRole} pendingObservations={pendingObservations} />
+        {userRole === 'gestor' && (
+          <WhatsAppHelp projectName={project.name} userName={session.user.name || undefined} />
+        )}
       </main>
     );
   } catch (error) {

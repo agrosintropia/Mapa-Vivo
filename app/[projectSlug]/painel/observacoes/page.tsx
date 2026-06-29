@@ -2,6 +2,8 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { redirect, notFound } from 'next/navigation';
 import ObservationReviewClient from './ObservationReviewClient';
+import AppHeader from '@/components/AppHeader';
+import BottomNav from '@/components/BottomNav';
 
 export const dynamic = 'force-dynamic';
 
@@ -58,21 +60,18 @@ export default async function ObservacoesPainelPage({ params }: PageProps) {
   }));
 
   return (
-    <main className="min-h-screen bg-areia flex flex-col">
-      <header className="bg-verde-cerrado text-white px-4 py-3 flex items-center justify-between shadow-md z-50">
-        <div className="flex items-center gap-3">
-          <a href={`/${project.slug}/mapa`} className="text-2xl leading-none">🌳</a>
-          <div>
-            <h1 className="font-display text-lg font-bold leading-tight">{project.name}</h1>
-            <p className="text-xs opacity-70">Observações dos moradores</p>
-          </div>
-        </div>
-        <nav className="flex items-center gap-4 text-sm">
-          <a href={`/${project.slug}/painel`} className="hover:underline opacity-80 hover:opacity-100">Painel</a>
-          <a href={`/${project.slug}/mapa`} className="hover:underline opacity-80 hover:opacity-100">Mapa</a>
-        </nav>
-      </header>
+    <main className="min-h-screen bg-areia flex flex-col has-bottom-nav">
+      <AppHeader
+        projectName={project.name}
+        projectSlug={project.slug}
+        subtitle="Observações dos moradores"
+        userRole={userRole!}
+        userName={session.user.name || undefined}
+        showBack
+        backHref={`/${project.slug}/painel`}
+      />
       <ObservationReviewClient observations={data} projectSlug={projectSlug} />
+      <BottomNav projectSlug={projectSlug} userRole={userRole!} />
     </main>
   );
 }

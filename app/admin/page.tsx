@@ -150,17 +150,26 @@ export default async function AdminPage() {
 
   return (
     <main className="min-h-screen bg-gray-50 flex flex-col">
-      <header className="bg-verde-cerrado text-white px-6 py-4 flex items-center justify-between shadow-md z-50">
+      <header className="bg-verde-cerrado text-white px-4 py-3 flex items-center justify-between shadow-md z-50 sticky top-0">
         <div className="flex items-center gap-3">
-          <span className="text-2xl">🌳</span>
+          <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M12 2C8 2 4 5 4 10c0 3 2 6 4 8l4 4 4-4c2-2 4-5 4-8 0-5-4-8-8-8z" fill="#4A7C2F" stroke="#4A7C2F" />
+              <circle cx="12" cy="10" r="3" fill="white" />
+            </svg>
+          </div>
           <div>
-            <h1 className="font-display text-xl font-bold">AgroSintropia</h1>
-            <p className="text-xs opacity-70">Painel Administrativo</p>
+            <h1 className="font-display text-base font-bold leading-tight">AgroSintropia</h1>
+            <p className="text-[10px] opacity-60">Painel Administrativo</p>
           </div>
         </div>
-        <nav className="flex items-center gap-4 text-sm">
-          <a href="/projetos" className="hover:underline opacity-80 hover:opacity-100">Projetos</a>
-          <a href="/" className="hover:underline opacity-80 hover:opacity-100">Site</a>
+        <nav className="flex items-center gap-3 text-sm">
+          <a href="/admin/logos" className="opacity-60 hover:opacity-100 text-xs">Logos</a>
+          <a href="/projetos" className="opacity-60 hover:opacity-100 text-xs">Projetos</a>
+          <a href="/" className="opacity-60 hover:opacity-100 text-xs">Site</a>
+          <a href="/selecionar-papel/trocar" className="bg-white/10 px-2.5 py-1 rounded-lg text-xs hover:bg-white/20 transition-colors">
+            {session.user.name?.split(' ')[0] || 'Admin'}
+          </a>
         </nav>
       </header>
       <AdminDashboard data={data} />

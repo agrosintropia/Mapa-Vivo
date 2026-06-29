@@ -1,7 +1,11 @@
 import { Metadata } from 'next';
 import { prisma } from '@/lib/prisma';
+import { auth } from '@/lib/auth';
 import { notFound } from 'next/navigation';
 import MapView from '@/components/MapView';
+import AppHeader from '@/components/AppHeader';
+import BottomNav from '@/components/BottomNav';
+import WhatsAppHelp from '@/components/WhatsAppHelp';
 import type { TreeData, ProjectData } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
@@ -120,20 +124,22 @@ export default async function MapaPage({ params }: PageProps) {
   }
 
   const { project, trees } = result;
+  const session = await auth();
+  const userRole = session?.user ? ((session.user as Record<string, unknown>).role as string) || 'morador' : 'morador';
+  const showHelp = userRole === 'morador' || userRole === 'gestor';
 
   return (
-    <main className="min-h-screen bg-areia flex flex-col">
-      <header className="bg-verde-cerrado text-white px-4 py-3 flex items-center gap-3 shadow-md z-50">
-        <a href="/" className="text-2xl leading-none">🌳</a>
-        <div>
-          <h1 className="font-display text-lg font-bold leading-tight">{project.name}</h1>
-          <p className="text-xs opacity-70">
-            {project.city}, {project.state} · {project.biome}
-            {project.area_hectares ? ` · ${project.area_hectares} ha` : ''}
-          </p>
-        </div>
-      </header>
+    <main className="min-h-screen bg-areia flex flex-col has-bottom-nav">
+      <AppHeader
+        projectName={project.name}
+        projectSlug={project.slug}
+        subtitle={`${project.city}, ${project.state}`}
+        userRole={userRole}
+        userName={session?.user?.name || undefined}
+      />
       <MapView project={project} trees={trees} projectSlug={projectSlug} />
+      {session?.user && <BottomNav projectSlug={projectSlug} userRole={userRole} />}
+      {showHelp && <WhatsAppHelp projectName={project.name} userName={session?.user?.name || undefined} />}
     </main>
   );
 }
