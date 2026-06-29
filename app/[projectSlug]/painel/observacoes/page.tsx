@@ -15,7 +15,7 @@ export default async function ObservacoesPainelPage({ params }: PageProps) {
   const { projectSlug } = params;
 
   const session = await auth();
-  if (!session?.user) redirect('/login');
+  if (!session?.user) redirect(`/login?callbackUrl=/${projectSlug}/painel/observacoes`);
 
   const userRole = (session.user as unknown as Record<string, unknown>).role as string | undefined;
   if (!userRole || (userRole !== 'gestor' && userRole !== 'tecnico')) {

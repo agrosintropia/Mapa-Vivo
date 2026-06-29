@@ -10,9 +10,17 @@ export const metadata: Metadata = {
   description: 'Faça login para acessar o painel de gestão do Mapa Vivo.',
 };
 
-export default async function LoginPage() {
+interface LoginPageProps {
+  searchParams: { callbackUrl?: string };
+}
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
   const session = await auth();
   if (session?.user) {
+    const callbackUrl = searchParams.callbackUrl;
+    if (callbackUrl && callbackUrl.startsWith('/')) {
+      redirect(callbackUrl);
+    }
     redirect('/selecionar-papel');
   }
 

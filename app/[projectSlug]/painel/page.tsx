@@ -58,7 +58,7 @@ export default async function PainelPage({ params }: PageProps) {
 
   const session = await auth();
   if (!session?.user) {
-    redirect('/login');
+    redirect(`/login?callbackUrl=/${projectSlug}/painel`);
   }
 
   const userRole = (session.user as Record<string, unknown>).role as string | undefined;
