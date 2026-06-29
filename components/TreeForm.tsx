@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useMemo, FormEvent } from 'react';
+import { compressImage } from '@/lib/compressImage';
 
 interface SpeciesOption {
   id: string;
@@ -117,18 +118,19 @@ export default function TreeForm({ projectSlug, species, userRole, editData }: P
     setShowSpeciesDropdown(false);
   }
 
-  function handlePhotoCapture(e: React.ChangeEvent<HTMLInputElement>, slot: number) {
+  async function handlePhotoCapture(e: React.ChangeEvent<HTMLInputElement>, slot: number) {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
+    try {
+      const compressed = await compressImage(file);
       setPhotos(prev => {
         const next = [...prev];
-        next[slot] = reader.result as string;
+        next[slot] = compressed;
         return next;
       });
-    };
-    reader.readAsDataURL(file);
+    } catch {
+      alert('Erro ao processar imagem');
+    }
   }
 
   function handlePhotoUrlPaste(url: string, slot: number) {
