@@ -66,6 +66,8 @@ async function getTreeData(qr_slug: string): Promise<FetchResult> {
         dbh_cm: true,
         height_m: true,
         photo_url: true,
+        photo_url_2: true,
+        photo_url_3: true,
         planted_date: true,
         created_at: true,
         species: {
@@ -109,6 +111,8 @@ async function getTreeData(qr_slug: string): Promise<FetchResult> {
 
     const serialized: TreeDetailData = {
       ...tree,
+      photo_url_2: tree.photo_url_2 ?? null,
+      photo_url_3: tree.photo_url_3 ?? null,
       planted_date: tree.planted_date?.toISOString() ?? null,
       created_at: tree.created_at.toISOString(),
       events: tree.events.map((e) => ({
@@ -319,21 +323,25 @@ export default async function TreeProfilePage({ params }: PageProps) {
 
   return (
     <main className="min-h-screen bg-areia">
-      {/* ───── Hero photo ───── */}
+      {/* ───── Hero photos ───── */}
       <div className="relative">
-        {tree.photo_url ? (
-          <div className="w-full aspect-[4/3] relative overflow-hidden">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={tree.photo_url}
-              alt={species.common_name}
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white/90 to-transparent" />
-          </div>
-        ) : (
-          <TreePlaceholder />
-        )}
+        {(() => {
+          const photos = [tree.photo_url, tree.photo_url_2, tree.photo_url_3].filter(Boolean) as string[];
+          if (photos.length > 0) {
+            return (
+              <div className={photos.length === 1 ? '' : 'flex overflow-x-auto snap-x snap-mandatory'}>
+                {photos.map((url, i) => (
+                  <div key={i} className={`w-full flex-shrink-0 snap-center aspect-[4/3] relative overflow-hidden`}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={url} alt={`${species.common_name} - foto ${i + 1}`} className="w-full h-full object-cover" />
+                    {i === photos.length - 1 && <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white/90 to-transparent" />}
+                  </div>
+                ))}
+              </div>
+            );
+          }
+          return <TreePlaceholder />;
+        })()}
 
         {/* Back / project nav */}
         <div className="absolute top-0 left-0 right-0 p-4 flex items-center justify-between">

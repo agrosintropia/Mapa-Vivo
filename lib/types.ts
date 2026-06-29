@@ -50,6 +50,8 @@ export interface TreeDetailData {
   dbh_cm: number | null;
   height_m: number | null;
   photo_url: string | null;
+  photo_url_2: string | null;
+  photo_url_3: string | null;
   planted_date: string | null;
   created_at: string;
   species: SpeciesData & {
