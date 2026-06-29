@@ -42,6 +42,7 @@ model Project {
   setup_installments Int?
   setup_payment String?      // avista|parcelado
   setup_paid    Boolean      @default(false)
+  plan_expires_at DateTime?
   created_at    DateTime     @default(now())
   plan          Plan?        @relation(fields: [plan_id], references: [id])
   trees         Tree[]
@@ -50,6 +51,7 @@ model Project {
   visits        TechnicalVisit[]
   members       ProjectMember[]
   review_requests ReviewRequest[]
+  service_requests ServiceRequest[]
 }
 
 model ProjectMember {
@@ -154,6 +156,8 @@ model Tree {
   status       String      @default("viva") // viva|doente|em_tratamento|morta|removida
   reliability  String      @default("pendente") // validado_tecnico|pendente|declarado_gestor
   photo_url    String?
+  photo_url_2  String?
+  photo_url_3  String?
   qr_slug      String      @unique
   created_at   DateTime    @default(now())
   project      Project     @relation(fields: [project_id], references: [id])
@@ -201,6 +205,20 @@ model Submission {
   reviewer_id      String?
   created_at       DateTime @default(now())
   project          Project  @relation(fields: [project_id], references: [id])
+}
+
+model ServiceRequest {
+  id                    String   @id @default(uuid())
+  project_id            String
+  requested_by          String
+  type                  String   // visita_tecnica|revisao_online|nova_area|outro
+  description           String
+  status                String   @default("pendente") // pendente|atribuido|em_andamento|concluido|recusado
+  assigned_technician_id String?
+  admin_note            String?
+  created_at            DateTime @default(now())
+  updated_at            DateTime @updatedAt
+  project               Project  @relation(fields: [project_id], references: [id], onDelete: Cascade)
 }
 
 model Profile {
