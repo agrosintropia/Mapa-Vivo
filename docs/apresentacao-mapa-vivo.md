@@ -107,7 +107,7 @@ Classificação por subclasses: nativa, exótica, frutífera, medicinal, melífe
 | Suporte prioritário | — | — | Sim |
 | Relatório personalizado | — | — | Sim |
 
-**Visitas técnicas inclusas**: sem custo de deslocamento nos planos Standard e Premium. Visitas adicionais cobradas separadamente.
+**Visitas técnicas inclusas**: sem custo do técnico nos planos Standard e Premium. Os custos de deslocamento sempre são cobrados. Visitas adicionais cobradas separadamente.
 
 **Taxa de setup**: cobrada uma vez na ativação do projeto (valor configurável pelo administrador, parcelável).
 
