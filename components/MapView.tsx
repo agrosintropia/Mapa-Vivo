@@ -2,9 +2,11 @@
 
 import { useState, useMemo, useCallback } from 'react';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import FilterBar from './FilterBar';
 import MapLegend from './MapLegend';
 import ObservationModal from './ObservationModal';
+import TreeTable from './TreeTable';
 import type { ProjectData, TreeData } from '@/lib/types';
 
 const LeafletMap = dynamic(() => import('./LeafletMap'), {
@@ -136,6 +138,12 @@ export default function MapView({ project, trees, projectSlug }: Props) {
           speciesColorMap={speciesColorMap}
         />
       </div>
+
+      <TreeTable
+        trees={filteredTrees}
+        hasActiveFilter={hasActiveFilter}
+        totalCount={trees.length}
+      />
 
       {observingTree && (
         <ObservationModal
