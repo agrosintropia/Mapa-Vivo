@@ -68,6 +68,7 @@ async function getTreeData(qr_slug: string): Promise<FetchResult> {
         photo_url: true,
         photo_url_2: true,
         photo_url_3: true,
+        tag_installed: true,
         planted_date: true,
         created_at: true,
         species: {
@@ -113,6 +114,7 @@ async function getTreeData(qr_slug: string): Promise<FetchResult> {
       ...tree,
       photo_url_2: tree.photo_url_2 ?? null,
       photo_url_3: tree.photo_url_3 ?? null,
+      tag_installed: tree.tag_installed,
       planted_date: tree.planted_date?.toISOString() ?? null,
       created_at: tree.created_at.toISOString(),
       events: tree.events.map((e) => ({
@@ -381,8 +383,14 @@ export default async function TreeProfilePage({ params }: PageProps) {
         </div>
 
         {/* ── Reliability seal ── */}
-        <div className="mb-4">
+        <div className="mb-4 space-y-2">
           <ReliabilityBadge reliability={tree.reliability} />
+          {tree.tag_installed && (
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg border bg-emerald-50 border-emerald-200 text-emerald-800 text-sm">
+              <span className="text-base">🏷️</span>
+              <span className="font-medium">Identificação física instalada</span>
+            </div>
+          )}
         </div>
 
         {/* ── Ecology info ── */}

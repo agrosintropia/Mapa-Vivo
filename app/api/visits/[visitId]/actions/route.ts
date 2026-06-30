@@ -37,7 +37,7 @@ export async function POST(
 
     switch (action_type) {
       case 'adicao_arvore': {
-        const { species_id, lat, lng, dbh_cm, height_m, status, photo_url, planted_date, notes } = body;
+        const { species_id, lat, lng, dbh_cm, height_m, status, photo_url, planted_date, tag_installed, notes } = body;
         if (!species_id || typeof lat !== 'number' || typeof lng !== 'number') {
           return NextResponse.json({ error: 'Campos obrigatórios faltando' }, { status: 400 });
         }
@@ -52,6 +52,8 @@ export async function POST(
             reliability: 'validado_tecnico',
             photo_url: photo_url ?? null,
             planted_date: planted_date ? new Date(planted_date) : null,
+            tag_installed: tag_installed === true,
+            tag_installed_at: tag_installed === true ? new Date() : null,
             qr_slug: generateQrSlug(),
           },
         });

@@ -127,6 +127,20 @@ export default function PainelClient({ data }: { data: PainelData }) {
 
   return (
     <div className="flex-1 p-4 md:p-8 max-w-6xl mx-auto w-full space-y-6">
+      {/* Initial visit banner */}
+      {data.userRole === 'gestor' && data.initialVisitCompleted === false && (
+        <div className="bg-ocre/10 border border-ocre/30 rounded-xl p-4 flex items-start gap-3">
+          <span className="text-2xl">🚧</span>
+          <div>
+            <h3 className="font-bold text-ocre">Aguardando visita técnica inicial</h3>
+            <p className="text-sm text-gray-600 mt-1">
+              Um técnico da AgroSintropia precisa realizar a visita técnica inicial para identificar e catalogar as árvores do projeto.
+              Enquanto isso, o cadastro de árvores está disponível apenas para técnicos.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Empty project CTA */}
       {data.totalTrees === 0 && data.userRole === 'tecnico' && (
         <div className="card border-2 border-dashed border-verde-medio text-center py-8">
@@ -176,7 +190,12 @@ export default function PainelClient({ data }: { data: PainelData }) {
             + Criar novo projeto
           </a>
         )}
-        {(data.userRole === 'tecnico' || data.userRole === 'gestor') && (
+        {data.userRole === 'tecnico' && (
+          <a href={`/${data.projectSlug}/painel/arvores/nova`} className="btn-primary text-sm">
+            + Cadastrar nova árvore
+          </a>
+        )}
+        {data.userRole === 'gestor' && data.initialVisitCompleted !== false && (
           <a href={`/${data.projectSlug}/painel/arvores/nova`} className="btn-primary text-sm">
             + Cadastrar nova árvore
           </a>

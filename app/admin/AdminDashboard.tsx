@@ -18,6 +18,10 @@ interface ProjectRow {
   setupPayment: string | null;
   setupPaid: boolean;
   planExpiresAt: string | null;
+  tagUnitPrice: number | null;
+  tagMargin: number;
+  tagCount: number;
+  initialVisitCompleted: boolean;
   createdAt: string;
   treeCount: number;
   memberCount: number;
@@ -118,7 +122,7 @@ interface Props {
   };
 }
 
-type Tab = 'overview' | 'projects' | 'plans' | 'technicians' | 'reviews' | 'visits' | 'requests';
+type Tab = 'overview' | 'projects' | 'plans' | 'technicians' | 'reviews' | 'visits' | 'requests' | 'tags';
 
 const TYPE_LABELS: Record<string, string> = {
   condominio: 'Condomínio',
@@ -264,6 +268,7 @@ export default function AdminDashboard({ data }: Props) {
     { id: 'reviews', label: 'Revisões', badge: m.openReviews },
     { id: 'visits', label: 'Visitas', badge: unpaidVisits || undefined },
     { id: 'requests', label: 'Solicitações', badge: m.openServiceRequests || undefined },
+    { id: 'tags', label: 'Plaquinhas' },
   ];
 
   return (
@@ -606,6 +611,70 @@ export default function AdminDashboard({ data }: Props) {
           )}
         </div>
       )}
+
+      {/* Tags / Plaquinhas */}
+      {tab === 'tags' && (() => {
+        const projectsWithTags = data.projects.filter(p => p.tagCount > 0);
+        const totalTags = data.projects.reduce((s, p) => s + p.tagCount, 0);
+        const totalTagRevenue = data.projects.reduce((s, p) => {
+          const price = p.tagUnitPrice || 3.90;
+          return s + (p.tagCount * price * (1 + p.tagMargin));
+        }, 0);
+        return (
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="bg-white rounded-xl shadow-sm p-4 text-center">
+                <p className="text-2xl font-bold text-verde-cerrado">{totalTags}</p>
+                <p className="text-xs text-gray-500 mt-1">Plaquinhas instaladas</p>
+              </div>
+              <div className="bg-white rounded-xl shadow-sm p-4 text-center">
+                <p className="text-2xl font-bold text-verde-cerrado">R$ {BRL(totalTagRevenue)}</p>
+                <p className="text-xs text-gray-500 mt-1">Faturamento total</p>
+              </div>
+              <div className="bg-white rounded-xl shadow-sm p-4 text-center">
+                <p className="text-2xl font-bold text-verde-cerrado">{projectsWithTags.length}</p>
+                <p className="text-xs text-gray-500 mt-1">Projetos com plaquinhas</p>
+              </div>
+            </div>
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+              <div className="p-4 border-b border-gray-100">
+                <h3 className="font-bold text-verde-cerrado">Faturamento por projeto</h3>
+                <p className="text-xs text-gray-400 mt-1">Preço unitário: R$ 3,90 · Margem: 30%</p>
+              </div>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-200 bg-gray-50">
+                    <th className="text-left py-3 px-4 font-medium text-gray-500">Projeto</th>
+                    <th className="text-center py-3 px-4 font-medium text-gray-500">Árvores</th>
+                    <th className="text-center py-3 px-4 font-medium text-gray-500">Plaquinhas</th>
+                    <th className="text-right py-3 px-4 font-medium text-gray-500">Valor</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.projects.map(p => {
+                    const price = p.tagUnitPrice || 3.90;
+                    const revenue = p.tagCount * price * (1 + p.tagMargin);
+                    return (
+                      <tr key={p.id} className="border-b border-gray-100 hover:bg-gray-50">
+                        <td className="py-3 px-4 font-medium text-gray-700">{p.name}</td>
+                        <td className="py-3 px-4 text-center text-gray-500">{p.treeCount}</td>
+                        <td className="py-3 px-4 text-center">
+                          <span className={`font-medium ${p.tagCount > 0 ? 'text-emerald-600' : 'text-gray-400'}`}>
+                            {p.tagCount}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-right font-medium text-verde-cerrado">
+                          {p.tagCount > 0 ? `R$ ${BRL(revenue)}` : '—'}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
@@ -673,6 +742,7 @@ function ProjectCard({ project: p, plans, isEditing, updatingPlan, onToggleEdit,
         </div>
         <div className="flex items-center gap-2 text-xs">
           <span className="bg-verde-medio/10 text-verde-medio px-2 py-0.5 rounded-full">{p.treeCount} árv.</span>
+          {p.tagCount > 0 && <span className="bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full">🏷️ {p.tagCount}</span>}
           <span className="text-gray-400">{p.memberCount} membros</span>
           <button onClick={onToggleEdit} className="text-ocre hover:underline cursor-pointer">{isEditing ? 'Fechar' : 'Editar'}</button>
         </div>

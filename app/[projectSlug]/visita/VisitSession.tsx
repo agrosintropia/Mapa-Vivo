@@ -78,6 +78,7 @@ export default function VisitSession({
   const addPhotoRef = useRef<HTMLInputElement>(null);
   const [addPlantedDate, setAddPlantedDate] = useState('');
   const [addPlantedIndeterminado, setAddPlantedIndeterminado] = useState(false);
+  const [addTagInstalled, setAddTagInstalled] = useState(false);
   const [addCount, setAddCount] = useState(0);
   const [lastAdded, setLastAdded] = useState('');
 
@@ -230,6 +231,7 @@ export default function VisitSession({
       status: addStatus,
       photo_url: addPhoto,
       planted_date: addPlantedIndeterminado ? null : (addPlantedDate || null),
+      tag_installed: addTagInstalled,
       notes: addNotes || null,
     });
     if (result) {
@@ -249,7 +251,7 @@ export default function VisitSession({
       // Reset form but keep GPS for continuous field work
       setAddSpeciesSearch(''); setAddSpeciesId(''); setAddDbh(''); setAddHeight('');
       setAddStatus('viva'); setAddNotes(''); setAddPhoto(null);
-      setAddPlantedDate(''); setAddPlantedIndeterminado(false);
+      setAddPlantedDate(''); setAddPlantedIndeterminado(false); setAddTagInstalled(false);
 
       if (continueAdding) {
         useGPS(setAddLat, setAddLng);
@@ -669,6 +671,11 @@ export default function VisitSession({
                   e.target.value = '';
                 }} />
             </div>
+
+            <label className="flex items-center gap-2 p-3 bg-emerald-50 rounded-lg cursor-pointer">
+              <input type="checkbox" checked={addTagInstalled} onChange={e => setAddTagInstalled(e.target.checked)} className="rounded" />
+              <span className="text-sm font-medium text-emerald-800">🏷️ Plaquinha instalada</span>
+            </label>
 
             <div className="flex gap-3">
               <button onClick={() => handleAddTree(false)} disabled={loading || !addSpeciesId} className="btn-secondary flex-1 disabled:opacity-50">

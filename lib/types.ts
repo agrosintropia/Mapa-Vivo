@@ -52,6 +52,7 @@ export interface TreeDetailData {
   photo_url: string | null;
   photo_url_2: string | null;
   photo_url_3: string | null;
+  tag_installed: boolean;
   planted_date: string | null;
   created_at: string;
   species: SpeciesData & {

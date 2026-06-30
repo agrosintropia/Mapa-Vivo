@@ -51,6 +51,7 @@ export interface PainelData {
   userRole: string;
   inviteCode?: string | null;
   pendingObservations?: number;
+  initialVisitCompleted?: boolean;
 }
 
 export default async function PainelPage({ params }: PageProps) {
@@ -89,7 +90,7 @@ export default async function PainelPage({ params }: PageProps) {
   try {
     const project = await prisma.project.findUnique({
       where: { slug: projectSlug },
-      select: { id: true, name: true, slug: true, invite_code: true, gestor_email: true },
+      select: { id: true, name: true, slug: true, invite_code: true, gestor_email: true, initial_visit_completed: true },
     });
 
     if (!project) notFound();
@@ -148,6 +149,7 @@ export default async function PainelPage({ params }: PageProps) {
         created_at: s.created_at.toISOString(),
       })),
       userRole,
+      initialVisitCompleted: project.initial_visit_completed,
     };
 
     return (

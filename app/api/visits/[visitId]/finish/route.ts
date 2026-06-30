@@ -39,6 +39,11 @@ export async function PUT(
       },
     });
 
+    const project = await prisma.project.findUnique({ where: { id: visit.project_id }, select: { initial_visit_completed: true } });
+    if (project && !project.initial_visit_completed) {
+      await prisma.project.update({ where: { id: visit.project_id }, data: { initial_visit_completed: true } });
+    }
+
     const summary = {
       additions: visit.actions.filter(a => a.type === 'adicao_arvore').length,
       removals: visit.actions.filter(a => a.type === 'remocao_arvore').length,

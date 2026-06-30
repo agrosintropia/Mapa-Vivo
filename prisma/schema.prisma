@@ -43,6 +43,9 @@ model Project {
   setup_payment String?      // avista|parcelado
   setup_paid    Boolean      @default(false)
   plan_expires_at DateTime?
+  initial_visit_completed Boolean @default(false)
+  tag_unit_price Float?
+  tag_margin     Float        @default(0.30)
   created_at    DateTime     @default(now())
   plan          Plan?        @relation(fields: [plan_id], references: [id])
   trees         Tree[]
@@ -172,6 +175,8 @@ model Tree {
   photo_url    String?
   photo_url_2  String?
   photo_url_3  String?
+  tag_installed    Boolean   @default(false)
+  tag_installed_at DateTime?
   qr_slug      String      @unique
   created_at   DateTime    @default(now())
   project      Project     @relation(fields: [project_id], references: [id])

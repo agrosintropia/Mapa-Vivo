@@ -31,7 +31,7 @@ export default async function AdminPage() {
     await prisma.profile.update({ where: { id: session.user.id }, data: { role: 'admin' } });
   }
 
-  const [projects, plans, technicians, reviewRequests, totalTrees, totalSpecies, totalObservations, recentVisits, allBilledVisits, allBilledReviews, serviceRequests, techVisitCounts, techTreeCounts] = await Promise.all([
+  const [projects, plans, technicians, reviewRequests, totalTrees, totalSpecies, totalObservations, recentVisits, allBilledVisits, allBilledReviews, serviceRequests, techVisitCounts, techTreeCounts, tagCounts] = await Promise.all([
     prisma.project.findMany({
       include: {
         plan: true,
@@ -69,31 +69,39 @@ export default async function AdminPage() {
     }),
     prisma.technicalVisit.groupBy({ by: ['technician_id'], _count: true }),
     prisma.tree.groupBy({ by: ['project_id'], _count: true }),
+    prisma.tree.groupBy({ by: ['project_id'], where: { tag_installed: true }, _count: true }),
   ]);
 
   const data = {
-    projects: projects.map(p => ({
-      id: p.id,
-      name: p.name,
-      slug: p.slug,
-      type: p.type,
-      city: p.city,
-      state: p.state,
-      status: p.status,
-      planName: p.plan?.display_name || 'Sem plano',
-      planId: p.plan_id,
-      gestorEmail: p.gestor_email,
-      setupFee: p.setup_fee,
-      setupInstallments: p.setup_installments,
-      setupPayment: p.setup_payment,
-      setupPaid: p.setup_paid,
-      planExpiresAt: p.plan_expires_at?.toISOString() || null,
-      createdAt: p.created_at.toISOString(),
-      treeCount: p._count.trees,
-      memberCount: p._count.members,
-      visitCount: p._count.visits,
-      subAreaCount: p._count.sub_areas,
-    })),
+    projects: projects.map(p => {
+      const tagCount = tagCounts.find(t => t.project_id === p.id)?._count || 0;
+      return {
+        id: p.id,
+        name: p.name,
+        slug: p.slug,
+        type: p.type,
+        city: p.city,
+        state: p.state,
+        status: p.status,
+        planName: p.plan?.display_name || 'Sem plano',
+        planId: p.plan_id,
+        gestorEmail: p.gestor_email,
+        setupFee: p.setup_fee,
+        setupInstallments: p.setup_installments,
+        setupPayment: p.setup_payment,
+        setupPaid: p.setup_paid,
+        planExpiresAt: p.plan_expires_at?.toISOString() || null,
+        tagUnitPrice: p.tag_unit_price,
+        tagMargin: p.tag_margin,
+        tagCount,
+        initialVisitCompleted: p.initial_visit_completed,
+        createdAt: p.created_at.toISOString(),
+        treeCount: p._count.trees,
+        memberCount: p._count.members,
+        visitCount: p._count.visits,
+        subAreaCount: p._count.sub_areas,
+      };
+    }),
     plans: plans.map(p => ({
       id: p.id,
       name: p.name,
