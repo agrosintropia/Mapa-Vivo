@@ -93,7 +93,7 @@ Classificação por subclasses: nativa, exótica, frutífera, medicinal, melífe
 | | Básico | Standard | Premium |
 |---|---|---|---|
 | **Preço mensal** | R$ 479 | R$ 679 | R$ 1.379 |
-| **Limite de árvores** | 200 | 1.000 | 5.000 |
+| **Limite de árvores** | 200 | 500 | 1.500 |
 | **Visitas técnicas/ano** | 0 | 1 | 2 |
 | Mapeamento de árvores | Sim | Sim | Sim |
 | QR codes individuais | Sim | Sim | Sim |

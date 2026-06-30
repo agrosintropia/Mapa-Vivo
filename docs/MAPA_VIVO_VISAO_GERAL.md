@@ -102,7 +102,7 @@ Transformar áreas verdes de condomínios e parques em ativos ambientais documen
 
 | Recurso | Básico (R$ 479/mês) | Standard (R$ 679/mês) | Premium (R$ 1.379/mês) |
 |---------|-----|----------|---------|
-| Limite de árvores | 200 | 1.000 | 5.000 |
+| Limite de árvores | 200 | 500 | 1.500 |
 | Visitas técnicas inclusas/ano | 0 | 1 | 2 |
 | Mapeamento + QR codes | Sim | Sim | Sim |
 | Painel do gestor | Sim | Sim | Sim |
@@ -442,14 +442,14 @@ Requisitos: Node.js 18+, PostgreSQL rodando localmente ou via Docker.
 4. **Volume de dados** — o seed cria 125 árvores. Não foram encontrados testes de carga ou limites documentados.
 5. **Política de retenção de fotos** — sem definição de quanto tempo as fotos data URI permanecem ou se são compactadas retroativamente.
 
-### Perguntas em Aberto
+### Perguntas Respondidas
 
-1. O Cloudinary será ativado antes de onboardar clientes reais? O banco suportará fotos data URI com múltiplos projetos ativos?
-2. Haverá domínio próprio (ex: mapavivo.com.br) ou continuará no subdomínio Railway?
-3. Como será feita a cobrança automatizada — Stripe, PagSeguro, PIX, boleto?
-4. Os planos no banco (`Plan`) estão com limites diferentes dos documentados na apresentação (200/500/1500 no seed vs. 200/1000/5000 na apresentação). Qual é o correto?
-5. Há plano de backup do banco PostgreSQL em produção?
-6. Os emails de notificação (convite de morador, alerta de expiração, confirmação de visita) serão implementados via qual serviço?
+1. **Cloudinary será ativado antes de onboardar clientes reais?** — Sim. O Cloudinary será contratado antes de colocar clientes reais na plataforma. Fotos data URI são apenas para MVP.
+2. **Domínio próprio?** — Sim, haverá domínio próprio (a definir). Não continuará no subdomínio Railway.
+3. **Cobrança automatizada?** — Ainda não definido. Gateway de pagamento a escolher (Stripe, PagSeguro, PIX, boleto são opções em avaliação).
+4. **Limites dos planos?** — Os limites corretos são: Básico 200 árvores, Standard 500, Premium 1.500. Os valores 1.000/5.000 na apresentação estavam desatualizados.
+5. **Backup do banco?** — Ainda não implementado, mas é prioridade. Plano de backup a definir.
+6. **Emails de notificação?** — Serviço de email transacional ainda não definido.
 
 ---
 
