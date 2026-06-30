@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { v4 as uuidv4 } from 'uuid';
+import { speciesData } from './speciesData';
 
 const adapter = new PrismaPg(process.env.DATABASE_URL!);
 const prisma = new PrismaClient({ adapter });
@@ -55,310 +56,27 @@ const boundaryPolygon = {
   ],
 };
 
-// ─── Species data ───────────────────────────────────────────────────────────
-
-const speciesData = [
-  {
-    common_name: 'Ipê-amarelo',
-    scientific_name: 'Handroanthus ochraceus',
-    family: 'Bignoniaceae',
-    biome: ['Cerrado', 'Mata Atlântica'],
-    strata: 'alto',
-    description: 'Árvore de médio a grande porte, símbolo do Brasil, reconhecida pela exuberante floração amarela.',
-    ecological_function: 'Oferece néctar e pólen para abelhas e beija-flores durante a floração, enriquecendo a biodiversidade local. Suas flores atraem inúmeros polinizadores, sendo fundamental para a manutenção dos serviços ecossistêmicos.',
-    fruiting_season: 'Setembro a novembro',
-    fauna_attracted: 'Beija-flores, abelhas, borboletas',
-    subclasses: ['nativa', 'nativa_com_flor', 'atrativa_de_fauna', 'melifera'],
-    default_carbon_factor: 0.12,
-  },
-  {
-    common_name: 'Ipê-roxo',
-    scientific_name: 'Handroanthus impetiginosus',
-    family: 'Bignoniaceae',
-    biome: ['Cerrado', 'Mata Atlântica', 'Caatinga'],
-    strata: 'alto',
-    description: 'Árvore de grande porte com floração roxa vibrante antes da emissão das folhas.',
-    ecological_function: 'Fornece recurso alimentar vital para polinizadores no período de seca, quando poucas espécies florescem. Sua casca é amplamente utilizada na medicina popular do cerrado.',
-    fruiting_season: 'Outubro a dezembro',
-    fauna_attracted: 'Beija-flores, morcegos, borboletas',
-    subclasses: ['nativa', 'nativa_com_flor', 'medicinal', 'atrativa_de_fauna'],
-    default_carbon_factor: 0.13,
-  },
-  {
-    common_name: 'Pequi',
-    scientific_name: 'Caryocar brasiliense',
-    family: 'Caryocaraceae',
-    biome: ['Cerrado'],
-    strata: 'medio',
-    description: 'Árvore símbolo do Cerrado, produz frutos de grande valor gastronômico e ecológico.',
-    ecological_function: 'Fruto essencial para a fauna do cerrado, especialmente macacos, cutias e araras. Flor melífera que atrai grande diversidade de abelhas nativas, sendo pilar da cadeia alimentar local.',
-    fruiting_season: 'Novembro a fevereiro',
-    fauna_attracted: 'Macacos, cutias, araras, tucanos, abelhas',
-    subclasses: ['nativa', 'frutifera', 'atrativa_de_fauna', 'melifera'],
-    default_carbon_factor: 0.10,
-  },
-  {
-    common_name: 'Baru',
-    scientific_name: 'Dipteryx alata',
-    family: 'Fabaceae',
-    biome: ['Cerrado'],
-    strata: 'alto',
-    description: 'Árvore de grande porte típica do cerrado, produz sementes oleaginosas com alto valor nutritivo.',
-    ecological_function: 'Frutos e sementes são recursos alimentares críticos para mamíferos de médio e grande porte, como pacas, catetos e lobos-guará. Contribui significativamente para o banco de carbono do cerrado.',
-    fruiting_season: 'Setembro a novembro',
-    fauna_attracted: 'Lobo-guará, pacas, catetos, aves frugívoras',
-    subclasses: ['nativa', 'frutifera', 'atrativa_de_fauna'],
-    default_carbon_factor: 0.15,
-  },
-  {
-    common_name: 'Jatobá',
-    scientific_name: 'Hymenaea stigonocarpa',
-    family: 'Fabaceae',
-    biome: ['Cerrado'],
-    strata: 'alto',
-    description: 'Árvore de grande porte e longevidade, com frutos em vagem lenhosa e resina medicinal.',
-    ecological_function: 'A polpa dos frutos é consumida por diversas espécies da fauna, incluindo antas, queixadas e aves. Sua resina tem propriedades antimicrobianas e é utilizada na medicina tradicional.',
-    fruiting_season: 'Julho a outubro',
-    fauna_attracted: 'Antas, queixadas, cutias, aves',
-    subclasses: ['nativa', 'frutifera', 'medicinal', 'madeireira_nobre'],
-    default_carbon_factor: 0.16,
-  },
-  {
-    common_name: 'Aroeira',
-    scientific_name: 'Myracrodruon urundeuva',
-    family: 'Anacardiaceae',
-    biome: ['Cerrado', 'Caatinga'],
-    strata: 'alto',
-    description: 'Árvore de madeira durabilíssima, ameaçada de extinção por exploração predatória histórica.',
-    ecological_function: 'Produz frutos carnosos que alimentam aves e mamíferos. Espécie de importância histórica e cultural, com propriedades medicinais reconhecidas cientificamente para uso anti-inflamatório.',
-    fruiting_season: 'Setembro a novembro',
-    fauna_attracted: 'Aves frugívoras, morcegos',
-    subclasses: ['nativa', 'madeireira_nobre', 'ameacada_de_extincao', 'medicinal'],
-    default_carbon_factor: 0.18,
-  },
-  {
-    common_name: 'Pau-brasil',
-    scientific_name: 'Paubrasilia echinata',
-    family: 'Fabaceae',
-    biome: ['Mata Atlântica'],
-    strata: 'alto',
-    description: 'Árvore símbolo do Brasil, historicamente explorada até quase extinção, hoje protegida por lei.',
-    ecological_function: 'Espécie em recuperação com papel fundamental na restauração da Mata Atlântica. Seu plantio em áreas degradadas contribui para a reconstituição do dossel e recolonização de fauna.',
-    fruiting_season: 'Outubro a dezembro',
-    fauna_attracted: 'Aves insetívoras, morcegos',
-    subclasses: ['nativa', 'madeireira_nobre', 'ameacada_de_extincao'],
-    default_carbon_factor: 0.20,
-  },
-  {
-    common_name: 'Cagaita',
-    scientific_name: 'Eugenia dysenterica',
-    family: 'Myrtaceae',
-    biome: ['Cerrado'],
-    strata: 'medio',
-    description: 'Árvore frutífera nativa do cerrado com frutos amarelos levemente ácidos, muito apreciados.',
-    ecological_function: 'Espécie frutífera de grande importância para a fauna silvestre e para as populações humanas do cerrado. Seus frutos suculentos atraem diversas espécies de aves e mamíferos em período de escassez.',
-    fruiting_season: 'Setembro a outubro',
-    fauna_attracted: 'Pombas, tucanos, jacus, morcegos frugívoros',
-    subclasses: ['nativa', 'frutifera', 'atrativa_de_fauna'],
-    default_carbon_factor: 0.09,
-  },
-  {
-    common_name: 'Jacarandá-do-cerrado',
-    scientific_name: 'Machaerium opacum',
-    family: 'Fabaceae',
-    biome: ['Cerrado'],
-    strata: 'medio',
-    description: 'Árvore de médio porte com bela floração lilás e madeira resistente.',
-    ecological_function: 'Fornece recursos florais para abelhas e outros polinizadores. Sua madeira é resistente e utilizada artesanalmente. Espécie importante para a recomposição do cerrado sensu stricto.',
-    fruiting_season: 'Outubro a dezembro',
-    fauna_attracted: 'Abelhas, borboletas',
-    subclasses: ['nativa', 'nativa_com_flor', 'madeireira_nobre'],
-    default_carbon_factor: 0.11,
-  },
-  {
-    common_name: 'Embaúba',
-    scientific_name: 'Cecropia pachystachya',
-    family: 'Urticaceae',
-    biome: ['Cerrado', 'Mata Atlântica', 'Amazônia'],
-    strata: 'medio',
-    description: 'Árvore pioneira de crescimento rápido, essencial na regeneração natural de áreas perturbadas.',
-    ecological_function: 'Espécie pioneira fundamental para a regeneração natural. Seus frutos são alimento essencial para pássaros, morcegos e primatas. Abriga formigas simbióticas que defendem a planta de herbívoros.',
-    fruiting_season: 'Março a agosto',
-    fauna_attracted: 'Pombas, papagaios, saguis, morcegos frugívoros, preguiças',
-    subclasses: ['nativa', 'pioneira', 'atrativa_de_fauna'],
-    default_carbon_factor: 0.07,
-  },
-  {
-    common_name: 'Buriti',
-    scientific_name: 'Mauritia flexuosa',
-    family: 'Arecaceae',
-    biome: ['Cerrado', 'Amazônia'],
-    strata: 'emergente',
-    description: 'Palmeira símbolo do cerrado, indicadora de veredas e cursos d\'água. Árvore da vida.',
-    ecological_function: 'Considerada a "árvore da vida" pelos povos do cerrado, seus frutos alimentam dezenas de espécies. Indicadora de áreas de nascentes e preservação de recursos hídricos. Flores melíferas abundantes.',
-    fruiting_season: 'Maio a setembro',
-    fauna_attracted: 'Araras, tucanos, macacos, queixadas, capivara, lobo-guará',
-    subclasses: ['nativa', 'frutifera', 'atrativa_de_fauna', 'melifera'],
-    default_carbon_factor: 0.14,
-  },
-  {
-    common_name: 'Candeia',
-    scientific_name: 'Eremanthus erythropappus',
-    family: 'Asteraceae',
-    biome: ['Cerrado', 'Mata Atlântica'],
-    strata: 'medio',
-    description: 'Árvore de madeira resistente, utilizada para mourões e moirões, com potencial medicinal.',
-    ecological_function: 'Espécie com propriedades inseticidas naturais (alfabisabolol). Pioneira em ambientes de campo rupestre. Sua madeira é extremamente resistente ao apodrecimento. // TODO: verificar subclasses',
-    fruiting_season: 'Maio a agosto',
-    fauna_attracted: 'Aves granívoras, insetos',
-    subclasses: ['nativa', 'medicinal', 'madeireira_nobre'],
-    default_carbon_factor: 0.10,
-  },
-  {
-    common_name: 'Murici',
-    scientific_name: 'Byrsonima crassifolia',
-    family: 'Malpighiaceae',
-    biome: ['Cerrado', 'Amazônia'],
-    strata: 'medio',
-    description: 'Arbusto ou árvore de pequeno a médio porte com floração amarela intensa e frutos saborosos.',
-    ecological_function: 'Frutos apreciados por humanos e por grande diversidade de aves e mamíferos. Flores são fonte de óleos florais usados por abelhas-da-espécie Centris para construção de ninhos, sendo uma das mais importantes plantas melíferas do cerrado.',
-    fruiting_season: 'Julho a setembro',
-    fauna_attracted: 'Abelhas Centris, pombas, aves frugívoras, tatus',
-    subclasses: ['nativa', 'frutifera', 'atrativa_de_fauna', 'melifera'],
-    default_carbon_factor: 0.08,
-  },
-  {
-    common_name: 'Sucupira-preta',
-    scientific_name: 'Bowdichia virgilioides',
-    family: 'Fabaceae',
-    biome: ['Cerrado', 'Amazônia'],
-    strata: 'alto',
-    description: 'Árvore de grande porte com madeira de alta durabilidade e propriedades medicinais reconhecidas.',
-    ecological_function: 'Madeira extremamente resistente, usada historicamente em construções. As sementes têm uso medicinal comprovado para problemas articulares. Importante fornecedora de habitat para aves e animais cavadores.',
-    fruiting_season: 'Setembro a novembro',
-    fauna_attracted: 'Aves granívoras, insetos',
-    subclasses: ['nativa', 'madeireira_nobre', 'medicinal'],
-    default_carbon_factor: 0.17,
-  },
-  {
-    common_name: 'Lobeira',
-    scientific_name: 'Solanum lycocarpum',
-    family: 'Solanaceae',
-    biome: ['Cerrado'],
-    strata: 'arbustivo',
-    description: 'Arbusto a árvore pequena, fruto essencial na dieta do lobo-guará, animal símbolo do cerrado.',
-    ecological_function: 'Fruto principal na dieta do lobo-guará, que atua como dispersor de sementes, contribuindo para a regeneração da espécie. A espécie é fundamental para a conservação deste predador ameaçado.',
-    fruiting_season: 'Outubro a março',
-    fauna_attracted: 'Lobo-guará, gambás, aves',
-    subclasses: ['nativa', 'frutifera', 'atrativa_de_fauna'],
-    default_carbon_factor: 0.05,
-  },
-  {
-    common_name: 'Copaíba',
-    scientific_name: 'Copaifera langsdorffii',
-    family: 'Fabaceae',
-    biome: ['Cerrado', 'Mata Atlântica', 'Amazônia'],
-    strata: 'alto',
-    description: 'Árvore de grande porte produtora de óleo-resina de reconhecido valor medicinal.',
-    ecological_function: 'Produz óleo-resina com propriedades anti-inflamatórias e cicatrizantes amplamente estudadas. Frutos com arilo vermelho são consumidos por aves, especialmente tucanos e araçaris. Importante componente do dossel das matas de galeria.',
-    fruiting_season: 'Julho a outubro',
-    fauna_attracted: 'Tucanos, araçaris, aves frugívoras',
-    subclasses: ['nativa', 'medicinal', 'madeireira_nobre'],
-    default_carbon_factor: 0.15,
-  },
-  {
-    common_name: 'Angico-do-cerrado',
-    scientific_name: 'Anadenanthera falcata',
-    family: 'Fabaceae',
-    biome: ['Cerrado'],
-    strata: 'alto',
-    description: 'Árvore de grande porte com vagens características e madeira de elevada durabilidade.',
-    ecological_function: 'Importante fixadora de nitrogênio, melhorando a fertilidade do solo. Suas flores atraem diversas espécies de polinizadores. A madeira é muito densa e resistente ao apodrecimento, tendo sido muito utilizada em construções rurais.',
-    fruiting_season: 'Setembro a novembro',
-    fauna_attracted: 'Abelhas, borboletas, aves insetívoras',
-    subclasses: ['nativa', 'madeireira_nobre', 'atrativa_de_fauna'],
-    default_carbon_factor: 0.16,
-  },
-  {
-    common_name: 'Ingá',
-    scientific_name: 'Inga vera',
-    family: 'Fabaceae',
-    biome: ['Cerrado', 'Mata Atlântica'],
-    strata: 'medio',
-    description: 'Árvore de crescimento rápido, frequente em matas de galeria, com frutos de polpa branca e doce.',
-    ecological_function: 'Excelente pioneira para restauração ecológica, crescimento rápido e fixação de nitrogênio. Frutos muito apreciados por crianças e adultos, além de ampla fauna. Proporciona sombra e melhoria do microclima.',
-    fruiting_season: 'Outubro a janeiro',
-    fauna_attracted: 'Tucanos, araçaris, saguis, macacos, morcegos',
-    subclasses: ['nativa', 'frutifera', 'atrativa_de_fauna', 'pioneira'],
-    default_carbon_factor: 0.09,
-  },
-  {
-    common_name: 'Gonçalo-alves',
-    scientific_name: 'Astronium fraxinifolium',
-    family: 'Anacardiaceae',
-    biome: ['Cerrado', 'Caatinga'],
-    strata: 'alto',
-    description: 'Árvore de madeira nobre ornamental com grã interlada e elevado valor comercial.',
-    ecological_function: 'Fornece frutos alados que dispersam pelo vento, colonizando áreas abertas. A madeira é uma das mais valiosas do cerrado, utilizada em marcenaria de luxo e instrumentos musicais.',
-    fruiting_season: 'Agosto a outubro',
-    fauna_attracted: 'Aves, mamíferos de médio porte',
-    subclasses: ['nativa', 'madeireira_nobre'],
-    default_carbon_factor: 0.17,
-  },
-  {
-    common_name: 'Caju-do-cerrado',
-    scientific_name: 'Anacardium humile',
-    family: 'Anacardiaceae',
-    biome: ['Cerrado'],
-    strata: 'arbustivo',
-    description: 'Arbusto rasteiro nativo do cerrado, primo menor do cajueiro, com frutos saborosos.',
-    ecological_function: 'Espécie adaptada às queimadas do cerrado com sistema radicular profundo. Seus frutos alimentam diversas espécies da fauna e são consumidos por populações locais. Flores melíferas atraem abelhas nativas sem ferrão.',
-    fruiting_season: 'Outubro a dezembro',
-    fauna_attracted: 'Abelhas nativas, pássaros, tatus, cotias',
-    subclasses: ['nativa', 'frutifera', 'melifera', 'atrativa_de_fauna'],
-    default_carbon_factor: 0.04,
-  },
-];
+// ─── Species data (imported from speciesData.ts — 250 species) ─────────────
 
 // ─── Tree generation config ─────────────────────────────────────────────────
 
-// Weights for species selection (sum not required to be 1 — will normalize)
-// More common cerrado species get higher weight
-const speciesWeights = [
-  8, // Ipê-amarelo
-  8, // Ipê-roxo
-  7, // Pequi
-  5, // Baru
-  5, // Jatobá
-  4, // Aroeira
-  3, // Pau-brasil
-  6, // Cagaita
-  4, // Jacarandá-do-cerrado
-  6, // Embaúba
-  4, // Buriti
-  3, // Candeia
-  6, // Murici
-  4, // Sucupira-preta
-  7, // Lobeira
-  4, // Copaíba
-  4, // Angico-do-cerrado
-  6, // Ingá
-  3, // Gonçalo-alves
-  7, // Caju-do-cerrado
-];
+const speciesWeights = speciesData.map(s => {
+  const isNativeCerrado = s.biome.includes('Cerrado') && s.subclasses.includes('nativa');
+  return isNativeCerrado ? 5 : 2;
+});
 
 // DBH and height ranges per strata
 const strataRanges: Record<string, { dbhMin: number; dbhMax: number; heightMin: number; heightMax: number }> = {
   emergente: { dbhMin: 40, dbhMax: 80, heightMin: 12, heightMax: 25 },
   alto: { dbhMin: 30, dbhMax: 80, heightMin: 8, heightMax: 20 },
   medio: { dbhMin: 15, dbhMax: 40, heightMin: 4, heightMax: 12 },
+  baixo: { dbhMin: 10, dbhMax: 25, heightMin: 3, heightMax: 8 },
   arbustivo: { dbhMin: 8, dbhMax: 20, heightMin: 2, heightMax: 6 },
 };
 
 // Status distribution: viva(75%), doente(10%), em_tratamento(5%), morta(5%), removida(5%)
 const statusOptions = ['viva', 'viva', 'viva', 'viva', 'viva', 'viva', 'viva', 'viva', 'doente', 'doente', 'em_tratamento', 'morta', 'removida'];
 
-// Reliability distribution: validado_tecnico(60%), pendente(30%), declarado_gestor(10%)
 const reliabilityOptions = [
   'validado_tecnico', 'validado_tecnico', 'validado_tecnico', 'validado_tecnico', 'validado_tecnico', 'validado_tecnico',
   'pendente', 'pendente', 'pendente',
