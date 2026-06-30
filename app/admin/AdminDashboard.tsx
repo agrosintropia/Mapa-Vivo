@@ -647,7 +647,7 @@ export default function AdminDashboard({ data }: Props) {
         const totalTags = data.projects.reduce((s, p) => s + p.tagCount, 0);
         const totalTagRevenue = data.projects.reduce((s, p) => {
           const price = p.tagUnitPrice || 3.90;
-          return s + (p.tagCount * price * (1 + p.tagMargin));
+          return s + (p.tagCount * price);
         }, 0);
         return (
           <div className="space-y-6">
@@ -668,7 +668,7 @@ export default function AdminDashboard({ data }: Props) {
             <div className="bg-white rounded-xl shadow-sm overflow-hidden">
               <div className="p-4 border-b border-gray-100">
                 <h3 className="font-bold text-verde-cerrado">Faturamento por projeto</h3>
-                <p className="text-xs text-gray-400 mt-1">Preço unitário: R$ 3,90 · Margem: 30%</p>
+                <p className="text-xs text-gray-400 mt-1">Preço unitário: R$ 3,90</p>
               </div>
               <table className="w-full text-sm">
                 <thead>
@@ -682,7 +682,7 @@ export default function AdminDashboard({ data }: Props) {
                 <tbody>
                   {data.projects.map(p => {
                     const price = p.tagUnitPrice || 3.90;
-                    const revenue = p.tagCount * price * (1 + p.tagMargin);
+                    const revenue = p.tagCount * price;
                     return (
                       <tr key={p.id} className="border-b border-gray-100 hover:bg-gray-50">
                         <td className="py-3 px-4 font-medium text-gray-700">{p.name}</td>

@@ -22,7 +22,7 @@ export default async function QRCodesPage({ params }: PageProps) {
 
   const userRole = (session.user as unknown as Record<string, unknown>).role as string | undefined;
   const ADMIN_EMAILS = ['agrosintropia@gmail.com'];
-  if (userRole !== 'admin' && !ADMIN_EMAILS.includes(session.user?.email || '')) {
+  if (userRole !== 'admin' && userRole !== 'tecnico' && !ADMIN_EMAILS.includes(session.user?.email || '')) {
     redirect(`/${projectSlug}/painel`);
   }
 
@@ -61,7 +61,7 @@ export default async function QRCodesPage({ params }: PageProps) {
           projectName={project.name}
           projectSlug={project.slug}
           subtitle={`QR Codes · ${data.length} árvores`}
-          userRole="admin"
+          userRole={userRole || 'tecnico'}
           userName={session.user.name || undefined}
           showBack
           backHref={`/${project.slug}/painel`}

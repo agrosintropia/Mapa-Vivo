@@ -200,6 +200,11 @@ export default function PainelClient({ data }: { data: PainelData }) {
             + Cadastrar nova árvore
           </a>
         )}
+        {(data.userRole === 'tecnico' || data.userRole === 'admin') && (
+          <a href={`/${data.projectSlug}/painel/qrcodes`} className="bg-white text-verde-cerrado border border-verde-cerrado px-6 py-3 rounded-lg font-semibold hover:bg-verde-cerrado/5 transition-colors text-sm">
+            QR Codes / Plaquinhas
+          </a>
+        )}
         <a href={`/api/projects/${data.projectSlug}/export`} className="btn-secondary text-sm">
           Exportar CSV
         </a>
