@@ -167,6 +167,8 @@ export default function AdminDashboard({ data }: Props) {
   const [editingProject, setEditingProject] = useState<string | null>(null);
   const [techEmail, setTechEmail] = useState('');
   const [techLoading, setTechLoading] = useState(false);
+  const [seedingSpecies, setSeedingSpecies] = useState(false);
+  const [seedResult, setSeedResult] = useState<string | null>(null);
 
   async function handleAssignPlan(projectId: string, planId: string) {
     setUpdatingPlan(projectId);
@@ -307,6 +309,33 @@ export default function AdminDashboard({ data }: Props) {
             <MetricCard label="Revisões abertas" value={m.openReviews} highlight={m.openReviews > 0} onClick={() => setTab('reviews')} />
             <MetricCard label="Solicitações" value={m.openServiceRequests} highlight={m.openServiceRequests > 0} onClick={() => setTab('requests')} />
             <MetricCard label="Receita mensal" value={`R$ ${BRL(m.monthlyRevenue)}`} />
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm p-4 flex items-center justify-between">
+            <div>
+              <h3 className="font-bold text-verde-cerrado text-sm">Banco de Espécies</h3>
+              <p className="text-xs text-gray-500">Carregar 250 espécies (frutíferas, nativas, ornamentais)</p>
+            </div>
+            <button
+              onClick={async () => {
+                setSeedingSpecies(true);
+                setSeedResult(null);
+                try {
+                  const res = await fetch('/api/admin/seed-species', { method: 'POST' });
+                  const data = await res.json();
+                  setSeedResult(data.message);
+                  if (data.inserted > 0) setTimeout(() => window.location.reload(), 2000);
+                } catch {
+                  setSeedResult('Erro ao carregar espécies');
+                }
+                setSeedingSpecies(false);
+              }}
+              disabled={seedingSpecies}
+              className="bg-verde-cerrado text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-verde-cerrado/90 disabled:opacity-50 cursor-pointer"
+            >
+              {seedingSpecies ? 'Carregando...' : 'Carregar Espécies'}
+            </button>
+            {seedResult && <span className="text-xs text-verde-medio ml-2">{seedResult}</span>}
           </div>
 
           {m.openServiceRequests > 0 && (
